@@ -4,106 +4,94 @@ from models import Scenario
 
 
 @dataclass
-class BerekeningResultaat:
-    # Investeringen
+class Resultaat:
     totaal_investering: float
-
-    # Maandelijkse omzet
     omzet_los: float
-    omzet_wekelijks_abo: float
-    omzet_maandelijks_abo: float
+    omzet_wekelijks: float
+    omzet_maandelijks: float
     totaal_omzet: float
-
-    # Maandelijkse kosten
-    variabele_kosten: float       # water + arbeid + overig per reiniging × aantal
-    vaste_kosten: float           # vaste maandkosten
+    variabele_kosten: float
+    vaste_kosten: float
     totaal_kosten: float
-
-    # Winst
-    bruto_winst: float
-    netto_winst: float            # zelfde als bruto hier (geen belasting berekend)
-
-    # Terugverdientijd
-    terugverdien_maanden: float | None   # None als verlieslatend
+    netto_winst: float
+    terugverdien_maanden: float | None
     terugverdien_jaren: float | None
-
-    # Extra statistieken
-    aantal_reinigingen_per_maand: int
+    aantal_reinigingen: int
     kosten_per_reiniging: float
-    break_even_reinigingen: int  # hoeveel reinigingen nodig om quitte te spelen
+    break_even_reinigingen: int
 
 
-def bereken(scenario: Scenario) -> BerekeningResultaat:
-    totaal_investering = sum(k.bedrag for k in scenario.investeringen)
+def bereken(s: Scenario) -> Resultaat:
+    investering = s.investering_totaal
 
-    # Aantal reinigingen per maand
-    reinigingen_los = scenario.losse_reinigingen
-    reinigingen_wekelijks = scenario.wekelijkse_abonnees * 4  # ~4 weken per maand
-    reinigingen_maandelijks = scenario.maandelijkse_abonnees
-    totaal_reinigingen = reinigingen_los + reinigingen_wekelijks + reinigingen_maandelijks
+    reinigingen_los = s.losse_reinigingen
+    reinigingen_wk = s.wekelijkse_abonnees * 4
+    reinigingen_mnd = s.maandelijkse_abonnees
+    totaal_reinigingen = reinigingen_los + reinigingen_wk + reinigingen_mnd
 
-    # Omzet
-    omzet_los = reinigingen_los * scenario.prijs_los
-    omzet_wekelijks = scenario.wekelijkse_abonnees * scenario.prijs_wekelijks_abo
-    omzet_maandelijks = scenario.maandelijkse_abonnees * scenario.prijs_maandelijks_abo
-    totaal_omzet = omzet_los + omzet_wekelijks + omzet_maandelijks
+    omzet_los = reinigingen_los * s.prijs_los
+    omzet_wk = s.wekelijkse_abonnees * s.prijs_wekelijks_abo
+    omzet_mnd = s.maandelijkse_abonnees * s.prijs_maandelijks_abo
+    totaal_omzet = omzet_los + omzet_wk + omzet_mnd
 
-    # Variabele kosten
-    kosten_per_reiniging = (
-        scenario.water_per_reiniging
-        + scenario.arbeid_per_reiniging
-        + scenario.overig_per_reiniging
-    )
-    variabele_kosten = totaal_reinigingen * kosten_per_reiniging
-
-    # Vaste kosten
-    vaste_kosten = sum(k.bedrag for k in scenario.vaste_maandkosten)
-
+    kosten_per_job = s.water_per_reiniging + s.arbeid_per_reiniging + s.overig_per_reiniging
+    variabele_kosten = totaal_reinigingen * kosten_per_job
+    vaste_kosten = s.vaste_kosten_totaal
     totaal_kosten = variabele_kosten + vaste_kosten
     netto_winst = totaal_omzet - totaal_kosten
 
-    # Terugverdientijd
     if netto_winst > 0:
-        terugverdien_maanden = totaal_investering / netto_winst
-        terugverdien_jaren = terugverdien_maanden / 12
+        tv_maanden = investering / netto_winst
+        tv_jaren = tv_maanden / 12
     else:
-        terugverdien_maanden = None
-        terugverdien_jaren = None
+        tv_maanden = None
+        tv_jaren = None
 
-    # Break-even: hoeveel losse reinigingen om vaste kosten te dekken (bij 0 abonnees)
-    marge_per_reiniging = scenario.prijs_los - kosten_per_reiniging
-    if marge_per_reiniging > 0:
-        break_even = int((vaste_kosten / marge_per_reiniging) + 0.999)
-    else:
-        break_even = -1
+    marge_per_job = s.prijs_los - kosten_per_job
+    break_even = int((vaste_kosten / marge_per_job) + 0.999) if marge_per_job > 0 else -1
 
-    return BerekeningResultaat(
-        totaal_investering=totaal_investering,
+    return Resultaat(
+        totaal_investering=investering,
         omzet_los=omzet_los,
-        omzet_wekelijks_abo=omzet_wekelijks,
-        omzet_maandelijks_abo=omzet_maandelijks,
+        omzet_wekelijks=omzet_wk,
+        omzet_maandelijks=omzet_mnd,
         totaal_omzet=totaal_omzet,
         variabele_kosten=variabele_kosten,
         vaste_kosten=vaste_kosten,
         totaal_kosten=totaal_kosten,
-        bruto_winst=netto_winst,
         netto_winst=netto_winst,
-        terugverdien_maanden=terugverdien_maanden,
-        terugverdien_jaren=terugverdien_jaren,
-        aantal_reinigingen_per_maand=totaal_reinigingen,
-        kosten_per_reiniging=kosten_per_reiniging,
+        terugverdien_maanden=tv_maanden,
+        terugverdien_jaren=tv_jaren,
+        aantal_reinigingen=totaal_reinigingen,
+        kosten_per_reiniging=kosten_per_job,
         break_even_reinigingen=break_even,
     )
 
 
-def projecteer_cumulatief(scenario: Scenario, maanden: int = 36) -> list[dict]:
-    """Geeft maand-voor-maand cumulatieve winst/verlies terug (na investering)."""
-    totaal_investering = sum(k.bedrag for k in scenario.investeringen)
-    res = bereken(scenario)
-
+def cumulatief(s: Scenario, maanden: int = 48) -> list[dict]:
+    r = bereken(s)
+    saldo = -r.totaal_investering
     punten = []
-    cumulatief = -totaal_investering
     for m in range(1, maanden + 1):
-        cumulatief += res.netto_winst
-        punten.append({"maand": m, "cumulatief": round(cumulatief, 2)})
+        saldo += r.netto_winst
+        punten.append({"Maand": m, s.naam: round(saldo, 2)})
     return punten
+
+
+def schaal_resultaten(s: Scenario, max_cleaners: int = 6) -> list[dict]:
+    """Lineaire schaling: N cleaners = N × alles."""
+    r = bereken(s)
+    rows = []
+    for n in range(1, max_cleaners + 1):
+        investering_n = r.totaal_investering * n
+        winst_mnd_n = r.netto_winst * n
+        winst_jaar_n = winst_mnd_n * 12
+        tv = investering_n / winst_mnd_n if winst_mnd_n > 0 else None
+        rows.append({
+            "Aantal cleaners": n,
+            "Investering ($)": round(investering_n, 0),
+            "Winst/maand ($)": round(winst_mnd_n, 0),
+            "Winst/jaar ($)": round(winst_jaar_n, 0),
+            "Terugverdien (mnd)": round(tv, 1) if tv else None,
+        })
+    return rows

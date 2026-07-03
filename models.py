@@ -20,30 +20,38 @@ class Scenario:
     naam: str = ""
     omschrijving: str = ""
 
-    # Eenmalige investering
     investeringen: List[Kostenpost] = field(default_factory=list)
 
-    # Kosten per reiniging
-    water_per_reiniging: float = 2.50
+    water_per_reiniging: float = 0.30
     arbeid_per_reiniging: float = 5.00
     overig_per_reiniging: float = 0.50
 
-    # Vaste maandelijkse kosten
     vaste_maandkosten: List[Kostenpost] = field(default_factory=list)
 
-    # Prijsstelling
     prijs_los: float = 15.00
     prijs_wekelijks_abo: float = 45.00
     prijs_maandelijks_abo: float = 12.00
 
-    # Klantenprognose per maand
     losse_reinigingen: int = 0
     wekelijkse_abonnees: int = 0
     maandelijkse_abonnees: int = 0
 
+    @property
+    def investering_totaal(self) -> float:
+        return sum(k.bedrag for k in self.investeringen)
+
+    @property
+    def vaste_kosten_totaal(self) -> float:
+        return sum(k.bedrag for k in self.vaste_maandkosten)
+
+    def set_investering(self, bedrag: float) -> None:
+        self.investeringen = [Kostenpost("Investering", bedrag)]
+
+    def set_vaste_kosten(self, bedrag: float) -> None:
+        self.vaste_maandkosten = [Kostenpost("Vaste lasten", bedrag)]
+
     def to_dict(self) -> dict:
-        d = asdict(self)
-        return d
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, d: dict) -> "Scenario":
@@ -71,10 +79,6 @@ def save_scenarios(scenarios: List[Scenario]) -> None:
     )
 
 
-def get_scenario(scenario_id: str) -> Scenario | None:
-    return next((s for s in load_scenarios() if s.id == scenario_id), None)
-
-
 def upsert_scenario(scenario: Scenario) -> None:
     scenarios = load_scenarios()
     idx = next((i for i, s in enumerate(scenarios) if s.id == scenario.id), None)
@@ -86,5 +90,4 @@ def upsert_scenario(scenario: Scenario) -> None:
 
 
 def delete_scenario(scenario_id: str) -> None:
-    scenarios = [s for s in load_scenarios() if s.id != scenario_id]
-    save_scenarios(scenarios)
+    save_scenarios([s for s in load_scenarios() if s.id != scenario_id])

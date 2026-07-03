@@ -1,0 +1,80 @@
+[
+  {
+    "id": "f4ef1275-5857-4368-ae7d-2e2c5261af3d",
+    "naam": "Scenario 1 - 50 klanten",
+    "omschrijving": "",
+    "investeringen": [
+      {
+        "naam": "Aankoop machine",
+        "bedrag": 50000.0
+      }
+    ],
+    "water_per_reiniging": 0.3,
+    "arbeid_per_reiniging": 5.0,
+    "overig_per_reiniging": 0.5,
+    "vaste_maandkosten": [
+      {
+        "naam": "vaste lasten",
+        "bedrag": 220.0
+      }
+    ],
+    "prijs_los": 15.0,
+    "prijs_wekelijks_abo": 45.0,
+    "prijs_maandelijks_abo": 12.0,
+    "losse_reinigingen": 30,
+    "wekelijkse_abonnees": 10,
+    "maandelijkse_abonnees": 10
+  },
+  {
+    "id": "63729180-8495-40d8-96ee-4cfd0213f0f3",
+    "naam": "Scenario 2 - 100 klanten",
+    "omschrijving": "",
+    "investeringen": [
+      {
+        "naam": "Aankoop machine",
+        "bedrag": 50000.0
+      }
+    ],
+    "water_per_reiniging": 2.5,
+    "arbeid_per_reiniging": 5.0,
+    "overig_per_reiniging": 0.5,
+    "vaste_maandkosten": [
+      {
+        "naam": "vaste lasten",
+        "bedrag": 220.0
+      }
+    ],
+    "prijs_los": 15.0,
+    "prijs_wekelijks_abo": 45.0,
+    "prijs_maandelijks_abo": 12.0,
+    "losse_reinigingen": 50,
+    "wekelijkse_abonnees": 20,
+    "maandelijkse_abonnees": 30
+  },
+  {
+    "id": "03a524a2-e6bc-448d-9e43-e97553895bd5",
+    "naam": "Scenario 3 - 250 klanten",
+    "omschrijving": "",
+    "investeringen": [
+      {
+        "naam": "aankoop",
+        "bedrag": 50000.0
+      }
+    ],
+    "water_per_reiniging": 0.3,
+    "arbeid_per_reiniging": 5.0,
+    "overig_per_reiniging": 0.5,
+    "vaste_maandkosten": [
+      {
+        "naam": "vaste lasten",
+        "bedrag": 220.0
+      }
+    ],
+    "prijs_los": 15.0,
+    "prijs_wekelijks_abo": 45.0,
+    "prijs_maandelijks_abo": 12.0,
+    "losse_reinigingen": 100,
+    "wekelijkse_abonnees": 50,
+    "maandelijkse_abonnees": 100
+  }
+]
