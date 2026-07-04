@@ -5,6 +5,7 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -35,6 +36,7 @@ function app(): FirebaseApp {
 
 let _auth: Auth | null = null;
 let _db: Firestore | null = null;
+let _storage: FirebaseStorage | null = null;
 
 /** Firebase Auth instance (lazy, client-side). Gooit als config ontbreekt. */
 export function getFirebaseAuth(): Auth {
@@ -46,4 +48,19 @@ export function getFirebaseAuth(): Auth {
 export function getDb(): Firestore {
   if (!_db) _db = getFirestore(app());
   return _db;
+}
+
+/**
+ * True als Firebase Storage bruikbaar is (bucket in de config). De bucket moet
+ * daarnaast in de Firebase Console geactiveerd zijn; een mislukte upload wordt
+ * in de UI netjes afgevangen.
+ */
+export function isStorageConfigured(): boolean {
+  return isFirebaseConfigured() && Boolean(firebaseConfig.storageBucket);
+}
+
+/** Firebase Storage instance (lazy, client-side). Voor foto-bewijs uploads. */
+export function getFirebaseStorage(): FirebaseStorage {
+  if (!_storage) _storage = getStorage(app());
+  return _storage;
 }

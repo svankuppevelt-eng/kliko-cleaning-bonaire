@@ -8,6 +8,7 @@ import {
   getDocs,
   orderBy,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
@@ -38,6 +39,17 @@ export async function createAbonnement(
 ): Promise<string> {
   const ref = await addDoc(collection(getDb(), ABONNEMENTEN), data);
   return ref.id;
+}
+
+/**
+ * Abonnement-velden bijwerken (bv. vasteDag inplannen of laatsteReiniging).
+ * `vasteDag: null` = terug naar "niet ingepland".
+ */
+export async function updateAbonnement(
+  id: string,
+  data: Partial<Omit<Abonnement, "id" | "klantId">>
+): Promise<void> {
+  await updateDoc(doc(getDb(), ABONNEMENTEN, id), data);
 }
 
 export async function listAbonnementenVoorKlant(

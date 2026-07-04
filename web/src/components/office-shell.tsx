@@ -1,7 +1,8 @@
 "use client";
 
 // Shell + toegangs-gate voor het office-gedeelte (/beheer).
-// Redirect naar /login wanneer niet ingelogd of geen office-rol.
+// Redirect naar /login wanneer niet ingelogd of geen rol;
+// een schoonmaker hoort hier niet en gaat door naar /vandaag.
 import { type ReactNode, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,27 @@ export function OfficeShell({ children }: { children: ReactNode }) {
     if (user.status === "signed-out" || user.status === "no-access") {
       router.replace("/login");
     }
+    if (user.status === "schoonmaker") {
+      router.replace("/vandaag");
+    }
   }, [user.status, router]);
+
+  if (user.status === "schoonmaker") {
+    // Nette melding terwijl de redirect naar /vandaag loopt.
+    return (
+      <div className="mx-auto w-full max-w-md px-4 py-16">
+        <p className="rounded-xl border border-kliko-yellow bg-kliko-yellow/15 px-4 py-3 text-sm font-semibold text-kliko-navy">
+          {t("beheer.alleenkantoor")}
+        </p>
+        <Link
+          href="/vandaag"
+          className="mt-4 block rounded-full bg-kliko-blue px-5 py-3 text-center font-bold text-white"
+        >
+          {t("login.to.vandaag")}
+        </Link>
+      </div>
+    );
+  }
 
   if (user.status === "unconfigured") {
     return (
@@ -52,6 +73,12 @@ export function OfficeShell({ children }: { children: ReactNode }) {
               <Link href="/beheer" className="hover:text-kliko-blue">
                 {t("shell.klanten")}
               </Link>
+              <Link href="/beheer/planning" className="hover:text-kliko-blue">
+                {t("shell.planning")}
+              </Link>
+              <Link href="/vandaag" className="hover:text-kliko-blue">
+                {t("shell.vandaag")}
+              </Link>
               {user.rol === "eigenaar" && (
                 <Link href="/beheer/team" className="hover:text-kliko-blue">
                   {t("shell.team")}
@@ -76,6 +103,12 @@ export function OfficeShell({ children }: { children: ReactNode }) {
         <nav className="mx-auto flex w-full max-w-5xl items-center gap-5 px-4 pb-2.5 text-sm font-semibold text-kliko-navy sm:hidden">
           <Link href="/beheer" className="hover:text-kliko-blue">
             {t("shell.klanten")}
+          </Link>
+          <Link href="/beheer/planning" className="hover:text-kliko-blue">
+            {t("shell.planning")}
+          </Link>
+          <Link href="/vandaag" className="hover:text-kliko-blue">
+            {t("shell.vandaag")}
           </Link>
           {user.rol === "eigenaar" && (
             <Link href="/beheer/team" className="hover:text-kliko-blue">

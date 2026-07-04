@@ -14,12 +14,13 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { LogoPrimary } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useI18n } from "@/lib/i18n";
-import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { getDb, getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
 import { signOutOffice, useOfficeUser } from "@/lib/use-office-user";
-import { allowlistEntryVoorEmail } from "@/lib/auth-config";
+import { allowlistEntryVoorEmail, rolVoorEmail, type Rol } from "@/lib/auth-config";
 import { writeTeamUserDoc } from "@/lib/data/team";
 
 const inputCls =
@@ -73,12 +74,23 @@ export default function LoginPage() {
     }
     setBusy(true);
     try {
-      await signInWithEmailAndPassword(
+      const cred = await signInWithEmailAndPassword(
         getFirebaseAuth(),
         email.trim().toLowerCase(),
         wachtwoord
       );
-      router.replace("/beheer");
+      // Route op rol: schoonmakers naar hun dagoverzicht, office naar /beheer.
+      let rol: Rol | null = null;
+      try {
+        const snap = await getDoc(doc(getDb(), "users", cred.user.uid));
+        if (snap.exists() && snap.data().actief !== false) {
+          rol = (snap.data().rol as Rol) ?? null;
+        }
+      } catch {
+        // users-doc niet leesbaar: val terug op allowlist hieronder
+      }
+      if (!rol) rol = rolVoorEmail(email);
+      router.replace(rol === "schoonmaker" ? "/vandaag" : "/beheer");
     } catch (err) {
       setError(loginErrorTekst(err));
       // Firebase geeft bij onbekend account meestal invalid-credential terug
@@ -197,6 +209,24 @@ export default function LoginPage() {
                 className="rounded-full bg-kliko-blue px-5 py-3 text-center font-bold text-white transition-transform hover:scale-[1.02]"
               >
                 {t("login.to.beheer")}
+              </Link>
+              <button
+                onClick={() => signOutOffice()}
+                className="text-sm font-semibold text-kliko-navy/60 hover:text-kliko-navy"
+              >
+                {t("login.signout")}
+              </button>
+            </div>
+          ) : officeUser.status === "schoonmaker" ? (
+            <div className="mt-4 flex flex-col gap-3">
+              <p className="text-kliko-navy/70">
+                {t("login.already")} ({officeUser.email})
+              </p>
+              <Link
+                href="/vandaag"
+                className="rounded-full bg-kliko-blue px-5 py-3 text-center font-bold text-white transition-transform hover:scale-[1.02]"
+              >
+                {t("login.to.vandaag")}
               </Link>
               <button
                 onClick={() => signOutOffice()}
