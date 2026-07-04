@@ -76,6 +76,9 @@ export function OfficeShell({ children }: { children: ReactNode }) {
               <Link href="/beheer/planning" className="hover:text-kliko-blue">
                 {t("shell.planning")}
               </Link>
+              <Link href="/beheer/facturen" className="hover:text-kliko-blue">
+                {t("shell.facturen")}
+              </Link>
               <Link href="/beheer/buurten" className="hover:text-kliko-blue">
                 {t("shell.buurten")}
               </Link>
@@ -114,6 +117,9 @@ export function OfficeShell({ children }: { children: ReactNode }) {
           </Link>
           <Link href="/beheer/planning" className="hover:text-kliko-blue">
             {t("shell.planning")}
+          </Link>
+          <Link href="/beheer/facturen" className="hover:text-kliko-blue">
+            {t("shell.facturen")}
           </Link>
           <Link href="/beheer/buurten" className="hover:text-kliko-blue">
             {t("shell.buurten")}
