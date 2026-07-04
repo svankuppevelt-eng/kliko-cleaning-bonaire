@@ -1,0 +1,520 @@
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+
+export type Lang = "pap" | "nl" | "en";
+
+export const LANGS: { code: Lang; label: string }[] = [
+  { code: "pap", label: "PAP" },
+  { code: "nl", label: "NL" },
+  { code: "en", label: "EN" },
+];
+
+type Dict = Record<string, string>;
+
+// Papiamentu, Bonaire. LET OP: laten nakijken door een native speaker (Roderick / lokaal).
+const pap: Dict = {
+  "nav.how": "Kon e ta funshoná",
+  "nav.prices": "Tarifa",
+  "nav.contact": "Kontakto",
+  "nav.signup": "Registrá",
+  "hero.title": "Un kliko fresku i limpi. Tur biaha.",
+  "hero.sub":
+    "Limpiesa profeshonal di kliko na Boneiru, pa kas i pa negoshi. Sin holó, sin plaga, sin problema.",
+  "hero.cta1": "Registrá",
+  "hero.cta2": "Oferta pa negoshi",
+  "trust.1": "Sin holó i higiéniko",
+  "trust.2": "Dia fiho, konfiabel",
+  "trust.3": "Amigabel pa medioambiente, awa reusá",
+  "how.title": "Kon e ta funshoná",
+  "how.s1t": "Registrá bo mes",
+  "how.s1d": "Skohe bo abono online den 2 minüt.",
+  "how.s2t": "Nos ta bin",
+  "how.s2d": "Riba bo dia fiho, alineá ku e dia di rekohementu.",
+  "how.s3t": "Kliko limpi + prueba",
+  "how.s3d": "Bo ta risibí un potrèt via WhatsApp ora ta kla.",
+  "price.title": "Tarifa",
+  "price.sub": "Preis fiho pa luna, na dòler merikano. Bo por kanselá tur ora.",
+  "price.home": "Kas",
+  "price.biz": "Negoshi",
+  "price.month": "/luna",
+  "price.f1": "1 biaha pa luna",
+  "price.f2": "2 biaha pa luna",
+  "price.f4": "Kada siman",
+  "price.cta": "Skohe esaki",
+  "price.note": "Preisnan di ehèmpel, tarifa definitivo ta bin.",
+  "cta.title": "Kla pa un kliko fresku?",
+  "cta.sub": "Registrá awe i bo kliko ta limpi e siman ku ta bin.",
+  "cta.btn": "Registrá awor",
+  "foot.tagline": "Limpiesa profeshonal di kliko na Boneiru",
+  // Aanmelden + login + beheer. LET OP: Papiamentu laten nakijken door Roderick (native speaker).
+  "signup.title": "Registrá",
+  "signup.sub":
+    "Skohe bo abono i yena bo datos. Nos ta tuma kontakto pa planifiká bo dia fiho.",
+  "signup.type": "Tipo di kliente",
+  "signup.freq": "Kuantu biaha pa luna?",
+  "signup.price": "Bo preis",
+  "form.naam": "Nòmber",
+  "form.email": "Adrès di e-mail",
+  "form.telefoon": "Telefòn / WhatsApp",
+  "form.adres": "Adrès",
+  "form.wijk": "Bario",
+  "form.klikos": "Kantidat di kliko",
+  "form.notitie": "Nota (opshonal)",
+  "form.submit": "Manda registrashon",
+  "form.sending": "Ta manda...",
+  "form.err.required": "Yena tur veld obligatorio.",
+  "form.err.email": "Yena un adrès di e-mail válido.",
+  "form.err.save":
+    "No por a warda e datos. Kontrolá bo konekshon di internet i purba atrobe, òf manda nos un WhatsApp.",
+  "signup.done.title": "Danki pa bo registrashon!",
+  "signup.done.sub":
+    "Nos a risibí bo datos i lo tuma kontakto pronto pa planifiká e promé limpiesa.",
+  "signup.done.home": "Bèk na página prinsipal",
+  "signup.offline":
+    "Registrá via e wèpsait no ta aktivo ainda. Bo por wak e formulario kaba; warda ta sigui pronto.",
+  "login.title": "Login di ofisina",
+  "login.sub": "Login ku bo adrès di e-mail i bo password.",
+  "login.email": "Adrès di e-mail",
+  "login.password": "Password",
+  "login.submit": "Login",
+  "login.busy": "Ta hasi login...",
+  "login.err.credentials":
+    "E adrès di e-mail òf e password no ta korekto. Purba atrobe.",
+  "login.err.toomany":
+    "Muchu purba tras di otro. Warda un ratu i purba atrobe.",
+  "login.err.generic": "Login no a bai bon. Purba atrobe.",
+  "login.forgot": "Lubidá bo password?",
+  "login.reset.needemail":
+    "Yena bo adrès di e-mail promé, e ora ei nos ta manda e mail pa reset bo password.",
+  "login.reset.sent":
+    "Nos a manda un e-mail pa pone un password nobo. Wak bo inbox (i bo spam).",
+  "login.reset.err":
+    "No por a manda e mail di reset. Kontrolá e adrès di e-mail i purba atrobe.",
+  "login.first.btn": "Promé biaha ta login: skohe un password",
+  "login.first.title": "Promé biaha ta login",
+  "login.first.sub":
+    "Skohe un password pa bo kuenta. Despues bo ta login semper ku bo adrès di e-mail i e password aki.",
+  "login.first.pw": "Skohe un password",
+  "login.first.pw2": "Ripití e password",
+  "login.first.submit": "Krea kuenta i login",
+  "login.first.cancel": "Bèk na login",
+  "login.first.err.match": "E passwordnan no ta meskos.",
+  "login.err.weak": "E password ta muchu débil. Usa mínimo 6 karakter.",
+  "login.err.inuse":
+    "Ya tin un kuenta ku e adrès di e-mail aki. Login ku bo password.",
+  "login.offline":
+    "Login no ta aktivo ainda: e konfigurashon di Firebase no ta kla.",
+  "login.noaccess": "E kuenta aki no tin akseso na e parti di ofisina.",
+  "login.already": "Bo ta logá.",
+  "login.to.beheer": "Bai maneho di kliente",
+  "login.signout": "Sali",
+  "beheer.title": "Klientenan",
+  "beheer.search": "Buska riba nòmber, adrès òf bario",
+  "beheer.filter.wijk": "Tur bario",
+  "beheer.filter.type": "Tur tipo",
+  "beheer.loading": "Ta karga klientenan...",
+  "beheer.empty": "No a haña kliente.",
+  "beheer.err.load":
+    "No por a karga e klientenan. Refreská e página òf purba mas despues.",
+  "beheer.klikos": "kliko",
+  "beheer.aangemaakt": "Kreá",
+  "beheer.geen.abo": "Sin abono",
+  "status.actief": "Aktivo",
+  "status.pauze": "Pousa",
+  "status.gestopt": "Stòp",
+  "detail.back": "Bèk na klientenan",
+  "detail.notfound": "No a haña e kliente.",
+  "detail.contact": "Datos di kontakto",
+  "detail.abonnement": "Abono",
+  "detail.notitie": "Nota",
+  "shell.klanten": "Klientenan",
+  "shell.team": "Tim",
+  "shell.signout": "Sali",
+  // Teambeheer. LET OP: Papiamentu laten nakijken door Roderick (native speaker).
+  "team.title": "Tim",
+  "team.sub": "Maneha ken tin akseso na e parti di ofisina.",
+  "team.loading": "Ta karga e tim...",
+  "team.empty": "No tin miembro di tim ainda.",
+  "team.err.load": "No por a karga e tim. Refreská e página òf purba mas despues.",
+  "team.noaccess":
+    "Bo no tin akseso na maneho di tim. Solamente doñonan por maneha e tim.",
+  "team.new": "Miembro di tim nobo",
+  "team.form.rol": "Ròl",
+  "team.form.pw": "Password inisial",
+  "team.form.pw.hint":
+    "Mínimo 6 karakter. E miembro di tim por kambi'é despues via 'Lubidá bo password?'.",
+  "team.form.create": "Krea miembro di tim",
+  "team.form.busy": "Ta traha...",
+  "team.form.cancel": "Kanselá",
+  "team.err.create": "No por a krea e miembro di tim. Purba atrobe.",
+  "team.err.save": "No por a warda e kambionan. Purba atrobe.",
+  "team.err.delete": "No por a kita e akseso. Purba atrobe.",
+  "team.err.lastowner":
+    "Bo ta e último doño aktivo. Krea un otro doño promé, promé ku bo kita bo mes òf bahia bo ròl.",
+  "team.edit": "Editá",
+  "team.save": "Warda",
+  "team.actief.label": "Kuenta aktivo",
+  "team.status.inactief": "No aktivo",
+  "team.reset": "Manda reset di password",
+  "team.reset.sent": "E-mail di reset mandá.",
+  "team.reset.err": "No por a manda e e-mail di reset.",
+  "team.delete": "Kita akseso",
+  "team.delete.confirm":
+    "Bo ta sigur ku bo ke kita e akseso di e miembro di tim aki? Despues e no por login mas den ofisina.",
+  "team.you": "abo",
+  "rol.eigenaar": "Doño",
+  "rol.kantoor": "Ofisina",
+  "rol.schoonmaker": "Limpiadó",
+};
+
+const nl: Dict = {
+  "nav.how": "Hoe het werkt",
+  "nav.prices": "Tarieven",
+  "nav.contact": "Contact",
+  "nav.signup": "Aanmelden",
+  "hero.title": "Een frisse, schone kliko. Elke keer.",
+  "hero.sub":
+    "Professionele kliko-reiniging op Bonaire, voor huishoudens en bedrijven. Geen geur, geen ongedierte, geen gedoe.",
+  "hero.cta1": "Aanmelden",
+  "hero.cta2": "Offerte voor bedrijven",
+  "trust.1": "Geurvrij & hygiënisch",
+  "trust.2": "Vaste dag, betrouwbaar",
+  "trust.3": "Milieuvriendelijk, hergebruikt water",
+  "how.title": "Zo werkt het",
+  "how.s1t": "Meld je aan",
+  "how.s1d": "Kies je abonnement online in 2 minuten.",
+  "how.s2t": "Wij komen langs",
+  "how.s2d": "Op jouw vaste dag, afgestemd op de ophaaldag.",
+  "how.s3t": "Schone kliko + bewijs",
+  "how.s3d": "Je krijgt een foto via WhatsApp zodra het klaar is.",
+  "price.title": "Tarieven",
+  "price.sub": "Vaste prijs per maand, in US dollars. Opzeggen kan altijd.",
+  "price.home": "Huishouden",
+  "price.biz": "Bedrijf",
+  "price.month": "/maand",
+  "price.f1": "1× per maand",
+  "price.f2": "2× per maand",
+  "price.f4": "Wekelijks",
+  "price.cta": "Kies dit",
+  "price.note": "Voorbeeldprijzen, definitieve tarieven volgen.",
+  "cta.title": "Klaar voor een frisse kliko?",
+  "cta.sub": "Meld je vandaag aan en je kliko is volgende week schoon.",
+  "cta.btn": "Nu aanmelden",
+  "foot.tagline": "Professionele kliko-reiniging op Bonaire",
+  "signup.title": "Aanmelden",
+  "signup.sub":
+    "Kies je abonnement en vul je gegevens in. Wij nemen contact op om je vaste dag in te plannen.",
+  "signup.type": "Type klant",
+  "signup.freq": "Hoe vaak per maand?",
+  "signup.price": "Jouw prijs",
+  "form.naam": "Naam",
+  "form.email": "E-mailadres",
+  "form.telefoon": "Telefoon / WhatsApp",
+  "form.adres": "Adres",
+  "form.wijk": "Wijk",
+  "form.klikos": "Aantal kliko's",
+  "form.notitie": "Notitie (optioneel)",
+  "form.submit": "Verstuur aanmelding",
+  "form.sending": "Versturen...",
+  "form.err.required": "Vul alle verplichte velden in.",
+  "form.err.email": "Vul een geldig e-mailadres in.",
+  "form.err.save":
+    "Opslaan is niet gelukt. Controleer je internetverbinding en probeer het opnieuw, of stuur ons een WhatsApp-bericht.",
+  "signup.done.title": "Bedankt voor je aanmelding!",
+  "signup.done.sub":
+    "We hebben je gegevens ontvangen en nemen snel contact met je op om de eerste schoonmaakbeurt in te plannen.",
+  "signup.done.home": "Terug naar de homepage",
+  "signup.offline":
+    "Aanmelden via de site is nog niet actief. Je kunt het formulier alvast bekijken; opslaan volgt binnenkort.",
+  "login.title": "Office login",
+  "login.sub": "Log in met je e-mailadres en wachtwoord.",
+  "login.email": "E-mailadres",
+  "login.password": "Wachtwoord",
+  "login.submit": "Inloggen",
+  "login.busy": "Bezig met inloggen...",
+  "login.err.credentials":
+    "E-mailadres of wachtwoord klopt niet. Probeer het opnieuw.",
+  "login.err.toomany":
+    "Te veel pogingen achter elkaar. Wacht even en probeer het daarna opnieuw.",
+  "login.err.generic": "Inloggen is niet gelukt. Probeer het opnieuw.",
+  "login.forgot": "Wachtwoord vergeten?",
+  "login.reset.needemail":
+    "Vul eerst je e-mailadres in, dan sturen we de mail om je wachtwoord opnieuw in te stellen.",
+  "login.reset.sent":
+    "We hebben een e-mail gestuurd om een nieuw wachtwoord in te stellen. Check je inbox (en je spam-map).",
+  "login.reset.err":
+    "De reset-mail kon niet worden verstuurd. Controleer het e-mailadres en probeer het opnieuw.",
+  "login.first.btn": "Eerste keer inloggen: kies een wachtwoord",
+  "login.first.title": "Eerste keer inloggen",
+  "login.first.sub":
+    "Kies een wachtwoord voor je account. Daarna log je voortaan in met je e-mailadres en dit wachtwoord.",
+  "login.first.pw": "Kies een wachtwoord",
+  "login.first.pw2": "Herhaal het wachtwoord",
+  "login.first.submit": "Account aanmaken en inloggen",
+  "login.first.cancel": "Terug naar inloggen",
+  "login.first.err.match": "De wachtwoorden zijn niet gelijk.",
+  "login.err.weak": "Het wachtwoord is te zwak. Gebruik minimaal 6 tekens.",
+  "login.err.inuse":
+    "Er bestaat al een account met dit e-mailadres. Log in met je wachtwoord.",
+  "login.offline":
+    "Inloggen is nog niet actief: de Firebase-configuratie is nog niet gezet.",
+  "login.noaccess": "Dit account heeft geen toegang tot het office-gedeelte.",
+  "login.already": "Je bent ingelogd.",
+  "login.to.beheer": "Naar klantbeheer",
+  "login.signout": "Uitloggen",
+  "beheer.title": "Klanten",
+  "beheer.search": "Zoek op naam, adres of wijk",
+  "beheer.filter.wijk": "Alle wijken",
+  "beheer.filter.type": "Alle types",
+  "beheer.loading": "Klanten laden...",
+  "beheer.empty": "Geen klanten gevonden.",
+  "beheer.err.load":
+    "Klanten laden is niet gelukt. Vernieuw de pagina of probeer het later opnieuw.",
+  "beheer.klikos": "kliko's",
+  "beheer.aangemaakt": "Aangemaakt",
+  "beheer.geen.abo": "Geen abonnement",
+  "status.actief": "Actief",
+  "status.pauze": "Pauze",
+  "status.gestopt": "Gestopt",
+  "detail.back": "Terug naar klanten",
+  "detail.notfound": "Klant niet gevonden.",
+  "detail.contact": "Contactgegevens",
+  "detail.abonnement": "Abonnement",
+  "detail.notitie": "Notitie",
+  "shell.klanten": "Klanten",
+  "shell.team": "Team",
+  "shell.signout": "Uitloggen",
+  "team.title": "Team",
+  "team.sub": "Beheer wie toegang heeft tot het office-gedeelte.",
+  "team.loading": "Team laden...",
+  "team.empty": "Nog geen teamleden.",
+  "team.err.load":
+    "Het team laden is niet gelukt. Vernieuw de pagina of probeer het later opnieuw.",
+  "team.noaccess":
+    "Je hebt geen toegang tot teambeheer. Alleen eigenaars kunnen het team beheren.",
+  "team.new": "Nieuw teamlid",
+  "team.form.rol": "Rol",
+  "team.form.pw": "Initieel wachtwoord",
+  "team.form.pw.hint":
+    "Minimaal 6 tekens. Het teamlid kan het later zelf wijzigen via 'Wachtwoord vergeten?'.",
+  "team.form.create": "Teamlid aanmaken",
+  "team.form.busy": "Bezig...",
+  "team.form.cancel": "Annuleren",
+  "team.err.create": "Het teamlid aanmaken is niet gelukt. Probeer het opnieuw.",
+  "team.err.save": "Opslaan is niet gelukt. Probeer het opnieuw.",
+  "team.err.delete": "Toegang intrekken is niet gelukt. Probeer het opnieuw.",
+  "team.err.lastowner":
+    "Je bent de laatste actieve eigenaar. Maak eerst een andere eigenaar aan voordat je jezelf verwijdert of je rol verlaagt.",
+  "team.edit": "Bewerken",
+  "team.save": "Opslaan",
+  "team.actief.label": "Account actief",
+  "team.status.inactief": "Inactief",
+  "team.reset": "Stuur wachtwoord-reset",
+  "team.reset.sent": "Reset-mail verstuurd.",
+  "team.reset.err": "De reset-mail versturen is niet gelukt.",
+  "team.delete": "Toegang intrekken",
+  "team.delete.confirm":
+    "Weet je zeker dat je de toegang van dit teamlid wilt intrekken? Inloggen in het office-gedeelte werkt daarna niet meer.",
+  "team.you": "jij",
+  "rol.eigenaar": "Eigenaar",
+  "rol.kantoor": "Kantoor",
+  "rol.schoonmaker": "Schoonmaker",
+};
+
+const en: Dict = {
+  "nav.how": "How it works",
+  "nav.prices": "Pricing",
+  "nav.contact": "Contact",
+  "nav.signup": "Sign up",
+  "hero.title": "A fresh, clean bin. Every time.",
+  "hero.sub":
+    "Professional wheelie-bin cleaning on Bonaire, for homes and businesses. No smell, no pests, no hassle.",
+  "hero.cta1": "Sign up",
+  "hero.cta2": "Business quote",
+  "trust.1": "Odour-free & hygienic",
+  "trust.2": "Fixed day, reliable",
+  "trust.3": "Eco-friendly, recycled water",
+  "how.title": "How it works",
+  "how.s1t": "Sign up",
+  "how.s1d": "Choose your plan online in 2 minutes.",
+  "how.s2t": "We come by",
+  "how.s2d": "On your fixed day, aligned with collection day.",
+  "how.s3t": "Clean bin + proof",
+  "how.s3d": "You get a photo via WhatsApp once it's done.",
+  "price.title": "Pricing",
+  "price.sub": "Fixed monthly price, in US dollars. Cancel anytime.",
+  "price.home": "Household",
+  "price.biz": "Business",
+  "price.month": "/month",
+  "price.f1": "Once a month",
+  "price.f2": "Twice a month",
+  "price.f4": "Weekly",
+  "price.cta": "Choose",
+  "price.note": "Example prices, final rates to follow.",
+  "cta.title": "Ready for a fresh bin?",
+  "cta.sub": "Sign up today and your bin is clean next week.",
+  "cta.btn": "Sign up now",
+  "foot.tagline": "Professional wheelie-bin cleaning on Bonaire",
+  "signup.title": "Sign up",
+  "signup.sub":
+    "Choose your plan and fill in your details. We will contact you to schedule your fixed day.",
+  "signup.type": "Customer type",
+  "signup.freq": "How often per month?",
+  "signup.price": "Your price",
+  "form.naam": "Name",
+  "form.email": "Email address",
+  "form.telefoon": "Phone / WhatsApp",
+  "form.adres": "Address",
+  "form.wijk": "Neighbourhood",
+  "form.klikos": "Number of bins",
+  "form.notitie": "Note (optional)",
+  "form.submit": "Send sign-up",
+  "form.sending": "Sending...",
+  "form.err.required": "Please fill in all required fields.",
+  "form.err.email": "Please enter a valid email address.",
+  "form.err.save":
+    "Saving failed. Check your internet connection and try again, or send us a WhatsApp message.",
+  "signup.done.title": "Thank you for signing up!",
+  "signup.done.sub":
+    "We received your details and will contact you soon to schedule the first cleaning.",
+  "signup.done.home": "Back to homepage",
+  "signup.offline":
+    "Online sign-up is not active yet. You can already view the form; saving will follow soon.",
+  "login.title": "Office login",
+  "login.sub": "Sign in with your email address and password.",
+  "login.email": "Email address",
+  "login.password": "Password",
+  "login.submit": "Sign in",
+  "login.busy": "Signing you in...",
+  "login.err.credentials":
+    "Email address or password is incorrect. Please try again.",
+  "login.err.toomany":
+    "Too many attempts in a row. Wait a moment and try again.",
+  "login.err.generic": "Signing in failed. Please try again.",
+  "login.forgot": "Forgot your password?",
+  "login.reset.needemail":
+    "Enter your email address first, then we will send the password reset email.",
+  "login.reset.sent":
+    "We sent an email to set a new password. Check your inbox (and spam folder).",
+  "login.reset.err":
+    "The reset email could not be sent. Check the email address and try again.",
+  "login.first.btn": "First time signing in: choose a password",
+  "login.first.title": "First time signing in",
+  "login.first.sub":
+    "Choose a password for your account. From then on you sign in with your email address and this password.",
+  "login.first.pw": "Choose a password",
+  "login.first.pw2": "Repeat the password",
+  "login.first.submit": "Create account and sign in",
+  "login.first.cancel": "Back to sign in",
+  "login.first.err.match": "The passwords do not match.",
+  "login.err.weak": "The password is too weak. Use at least 6 characters.",
+  "login.err.inuse":
+    "An account with this email address already exists. Sign in with your password.",
+  "login.offline":
+    "Sign-in is not active yet: the Firebase configuration has not been set.",
+  "login.noaccess": "This account does not have access to the office area.",
+  "login.already": "You are signed in.",
+  "login.to.beheer": "Go to customer management",
+  "login.signout": "Sign out",
+  "beheer.title": "Customers",
+  "beheer.search": "Search by name, address or neighbourhood",
+  "beheer.filter.wijk": "All neighbourhoods",
+  "beheer.filter.type": "All types",
+  "beheer.loading": "Loading customers...",
+  "beheer.empty": "No customers found.",
+  "beheer.err.load": "Loading customers failed. Refresh the page or try again later.",
+  "beheer.klikos": "bins",
+  "beheer.aangemaakt": "Created",
+  "beheer.geen.abo": "No subscription",
+  "status.actief": "Active",
+  "status.pauze": "Paused",
+  "status.gestopt": "Stopped",
+  "detail.back": "Back to customers",
+  "detail.notfound": "Customer not found.",
+  "detail.contact": "Contact details",
+  "detail.abonnement": "Subscription",
+  "detail.notitie": "Note",
+  "shell.klanten": "Customers",
+  "shell.team": "Team",
+  "shell.signout": "Sign out",
+  "team.title": "Team",
+  "team.sub": "Manage who has access to the office area.",
+  "team.loading": "Loading team...",
+  "team.empty": "No team members yet.",
+  "team.err.load": "Loading the team failed. Refresh the page or try again later.",
+  "team.noaccess":
+    "You do not have access to team management. Only owners can manage the team.",
+  "team.new": "New team member",
+  "team.form.rol": "Role",
+  "team.form.pw": "Initial password",
+  "team.form.pw.hint":
+    "At least 6 characters. The team member can change it later via 'Forgot your password?'.",
+  "team.form.create": "Create team member",
+  "team.form.busy": "Working...",
+  "team.form.cancel": "Cancel",
+  "team.err.create": "Creating the team member failed. Please try again.",
+  "team.err.save": "Saving failed. Please try again.",
+  "team.err.delete": "Revoking access failed. Please try again.",
+  "team.err.lastowner":
+    "You are the last active owner. Create another owner first before removing yourself or lowering your role.",
+  "team.edit": "Edit",
+  "team.save": "Save",
+  "team.actief.label": "Account active",
+  "team.status.inactief": "Inactive",
+  "team.reset": "Send password reset",
+  "team.reset.sent": "Reset email sent.",
+  "team.reset.err": "Sending the reset email failed.",
+  "team.delete": "Revoke access",
+  "team.delete.confirm":
+    "Are you sure you want to revoke this team member's access? They will no longer be able to sign in to the office area.",
+  "team.you": "you",
+  "rol.eigenaar": "Owner",
+  "rol.kantoor": "Office",
+  "rol.schoonmaker": "Cleaner",
+};
+
+const DICTS: Record<Lang, Dict> = { pap, nl, en };
+
+type I18n = {
+  lang: Lang;
+  setLang: (l: Lang) => void;
+  t: (key: string) => string;
+};
+
+const I18nContext = createContext<I18n>({
+  lang: "nl",
+  setLang: () => {},
+  t: (k) => k,
+});
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Lang>("nl");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("kliko-lang") as Lang | null;
+    if (saved && DICTS[saved]) setLangState(saved);
+  }, []);
+
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    localStorage.setItem("kliko-lang", l);
+    document.documentElement.lang = l;
+  };
+
+  const t = (key: string) => DICTS[lang][key] ?? DICTS.nl[key] ?? key;
+
+  return (
+    <I18nContext.Provider value={{ lang, setLang, t }}>
+      {children}
+    </I18nContext.Provider>
+  );
+}
+
+export const useI18n = () => useContext(I18nContext);

@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Kliko Cleaning Bonaire — merkkleuren uit Design/Design.pdf */
+@theme {
+  --color-kliko-navy: #0d2b6a;
+  --color-kliko-blue: #0077cc;
+  --color-kliko-yellow: #ffc20e;
+  --color-kliko-red: #e30613;
+  --font-sans: Arial, Helvetica, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #0d2b6a;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
