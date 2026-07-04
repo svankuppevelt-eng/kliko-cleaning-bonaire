@@ -4,3 +4,6 @@ __pycache__/
 .streamlit/secrets.toml
 .env
 uploads/
+
+# harness worktrees en scratch
+.claude/worktrees/
