@@ -7,6 +7,18 @@ from pathlib import Path
 
 DATA_FILE = Path(__file__).parent / "data" / "scenarios.json"
 
+_VEROUDERDE_VELDEN = {
+    "prijs_los", "prijs_wekelijks_abo", "prijs_maandelijks_abo",
+    "losse_reinigingen", "wekelijkse_abonnees", "maandelijkse_abonnees",
+    "prijs_wk_1", "prijs_wk_2", "prijs_wk_3",
+    "prijs_mnd_1", "prijs_mnd_2", "prijs_mnd_3",
+    "klant_wk_1", "klant_wk_2", "klant_wk_3",
+    "klant_mnd_1", "klant_mnd_2", "klant_mnd_3",
+    "prijs_klein_mnd", "prijs_klein_wk", "prijs_bedrijf_mnd", "prijs_bedrijf_wk",
+    "klant_klein_mnd", "klant_klein_wk", "klant_bedrijf_mnd", "klant_bedrijf_wk",
+    "arbeid_per_reiniging",
+}
+
 
 @dataclass
 class Kostenpost:
@@ -22,19 +34,34 @@ class Scenario:
 
     investeringen: List[Kostenpost] = field(default_factory=list)
 
+    # Kosten per reiniging — arbeid is nu vast (personeel)
     water_per_reiniging: float = 0.30
-    arbeid_per_reiniging: float = 5.00
-    overig_per_reiniging: float = 0.50
+    overig_per_reiniging: float = 0.50  # middelen, slijtage
 
+    # Vaste maandkosten
     vaste_maandkosten: List[Kostenpost] = field(default_factory=list)
+    personeel_mnd: float = 2500.00  # salaris cleaner(s)
 
-    prijs_los: float = 15.00
-    prijs_wekelijks_abo: float = 45.00
-    prijs_maandelijks_abo: float = 12.00
+    # Capaciteit
+    containers_per_dag: int = 60
+    werkdagen_per_mnd: int = 20
 
-    losse_reinigingen: int = 0
-    wekelijkse_abonnees: int = 0
-    maandelijkse_abonnees: int = 0
+    # Prijsstelling (prijs per maand per klant, per container)
+    # frequentie: 1 = 1x/mnd, 2 = 2x/mnd, 4 = 4x/mnd
+    prijs_klein_1: float = 10.00
+    prijs_klein_2: float = 18.00
+    prijs_klein_4: float = 22.00
+    prijs_bedrijf_1: float = 18.00
+    prijs_bedrijf_2: float = 30.00
+    prijs_bedrijf_4: float = 36.00
+
+    # Klanten per abonnementsvorm
+    klant_klein_1: int = 0
+    klant_klein_2: int = 0
+    klant_klein_4: int = 0
+    klant_bedrijf_1: int = 0
+    klant_bedrijf_2: int = 0
+    klant_bedrijf_4: int = 0
 
     @property
     def investering_totaal(self) -> float:
@@ -43,6 +70,10 @@ class Scenario:
     @property
     def vaste_kosten_totaal(self) -> float:
         return sum(k.bedrag for k in self.vaste_maandkosten)
+
+    @property
+    def capaciteit_per_mnd(self) -> int:
+        return self.containers_per_dag * self.werkdagen_per_mnd
 
     def set_investering(self, bedrag: float) -> None:
         self.investeringen = [Kostenpost("Investering", bedrag)]
@@ -58,7 +89,9 @@ class Scenario:
         d = dict(d)
         d["investeringen"] = [Kostenpost(**k) for k in d.get("investeringen", [])]
         d["vaste_maandkosten"] = [Kostenpost(**k) for k in d.get("vaste_maandkosten", [])]
-        return cls(**d)
+        for veld in _VEROUDERDE_VELDEN:
+            d.pop(veld, None)
+        return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
 
 
 def load_scenarios() -> List[Scenario]:

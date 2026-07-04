@@ -1,80 +1,104 @@
 [
   {
     "id": "f4ef1275-5857-4368-ae7d-2e2c5261af3d",
-    "naam": "Scenario 1 - 50 klanten",
+    "naam": "Scenario 1 - 100 bedrijven",
     "omschrijving": "",
     "investeringen": [
       {
-        "naam": "Aankoop machine",
+        "naam": "Investering",
         "bedrag": 50000.0
       }
     ],
     "water_per_reiniging": 0.3,
-    "arbeid_per_reiniging": 5.0,
-    "overig_per_reiniging": 0.5,
+    "overig_per_reiniging": 1.0,
     "vaste_maandkosten": [
       {
-        "naam": "vaste lasten",
-        "bedrag": 220.0
+        "naam": "Vaste lasten",
+        "bedrag": 200.0
       }
     ],
-    "prijs_los": 15.0,
-    "prijs_wekelijks_abo": 45.0,
-    "prijs_maandelijks_abo": 12.0,
-    "losse_reinigingen": 30,
-    "wekelijkse_abonnees": 10,
-    "maandelijkse_abonnees": 10
+    "personeel_mnd": 2500.0,
+    "containers_per_dag": 60,
+    "werkdagen_per_mnd": 20,
+    "prijs_klein_1": 20.0,
+    "prijs_klein_2": 35.0,
+    "prijs_klein_4": 40.0,
+    "prijs_bedrijf_1": 50.0,
+    "prijs_bedrijf_2": 90.0,
+    "prijs_bedrijf_4": 120.0,
+    "klant_klein_1": 0,
+    "klant_klein_2": 0,
+    "klant_klein_4": 0,
+    "klant_bedrijf_1": 100,
+    "klant_bedrijf_2": 0,
+    "klant_bedrijf_4": 0
   },
   {
     "id": "63729180-8495-40d8-96ee-4cfd0213f0f3",
-    "naam": "Scenario 2 - 100 klanten",
+    "naam": "Scenario 2 - Straten",
     "omschrijving": "",
     "investeringen": [
       {
-        "naam": "Aankoop machine",
-        "bedrag": 50000.0
-      }
-    ],
-    "water_per_reiniging": 2.5,
-    "arbeid_per_reiniging": 5.0,
-    "overig_per_reiniging": 0.5,
-    "vaste_maandkosten": [
-      {
-        "naam": "vaste lasten",
-        "bedrag": 220.0
-      }
-    ],
-    "prijs_los": 15.0,
-    "prijs_wekelijks_abo": 45.0,
-    "prijs_maandelijks_abo": 12.0,
-    "losse_reinigingen": 50,
-    "wekelijkse_abonnees": 20,
-    "maandelijkse_abonnees": 30
-  },
-  {
-    "id": "03a524a2-e6bc-448d-9e43-e97553895bd5",
-    "naam": "Scenario 3 - 250 klanten",
-    "omschrijving": "",
-    "investeringen": [
-      {
-        "naam": "aankoop",
+        "naam": "Investering",
         "bedrag": 50000.0
       }
     ],
     "water_per_reiniging": 0.3,
-    "arbeid_per_reiniging": 5.0,
-    "overig_per_reiniging": 0.5,
+    "overig_per_reiniging": 1.0,
     "vaste_maandkosten": [
       {
-        "naam": "vaste lasten",
-        "bedrag": 220.0
+        "naam": "Vaste lasten",
+        "bedrag": 200.0
       }
     ],
-    "prijs_los": 15.0,
-    "prijs_wekelijks_abo": 45.0,
-    "prijs_maandelijks_abo": 12.0,
-    "losse_reinigingen": 100,
-    "wekelijkse_abonnees": 50,
-    "maandelijkse_abonnees": 100
+    "personeel_mnd": 2500.0,
+    "containers_per_dag": 60,
+    "werkdagen_per_mnd": 20,
+    "prijs_klein_1": 20.0,
+    "prijs_klein_2": 35.0,
+    "prijs_klein_4": 40.0,
+    "prijs_bedrijf_1": 50.0,
+    "prijs_bedrijf_2": 90.0,
+    "prijs_bedrijf_4": 120.0,
+    "klant_klein_1": 0,
+    "klant_klein_2": 0,
+    "klant_klein_4": 100,
+    "klant_bedrijf_1": 0,
+    "klant_bedrijf_2": 0,
+    "klant_bedrijf_4": 0
+  },
+  {
+    "id": "03a524a2-e6bc-448d-9e43-e97553895bd5",
+    "naam": "Scenario 3 - combi",
+    "omschrijving": "",
+    "investeringen": [
+      {
+        "naam": "Investering",
+        "bedrag": 50000.0
+      }
+    ],
+    "water_per_reiniging": 0.3,
+    "overig_per_reiniging": 1.0,
+    "vaste_maandkosten": [
+      {
+        "naam": "Vaste lasten",
+        "bedrag": 200.0
+      }
+    ],
+    "personeel_mnd": 2500.0,
+    "containers_per_dag": 60,
+    "werkdagen_per_mnd": 20,
+    "prijs_klein_1": 20.0,
+    "prijs_klein_2": 35.0,
+    "prijs_klein_4": 40.0,
+    "prijs_bedrijf_1": 50.0,
+    "prijs_bedrijf_2": 90.0,
+    "prijs_bedrijf_4": 120.0,
+    "klant_klein_1": 0,
+    "klant_klein_2": 0,
+    "klant_klein_4": 100,
+    "klant_bedrijf_1": 50,
+    "klant_bedrijf_2": 0,
+    "klant_bedrijf_4": 0
   }
 ]
