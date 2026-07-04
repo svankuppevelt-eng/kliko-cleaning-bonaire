@@ -10,7 +10,10 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useI18n } from "@/lib/i18n";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createAbonnement, createKlant } from "@/lib/data/klanten";
-import { FREQUENTIES, formatUsd, prijsVoor } from "@/lib/data/prijzen";
+import { FREQUENTIES, formatUsd } from "@/lib/data/prijzen";
+import { useInstellingen } from "@/lib/use-instellingen";
+import { useActieveBuurten } from "@/lib/use-buurten";
+import { BuurtVeld } from "@/components/buurt-veld";
 import type { Frequentie, KlantType } from "@/lib/data/types";
 
 const FREQ_LABEL: Record<Frequentie, string> = {
@@ -24,6 +27,10 @@ const inputCls =
 
 export default function AanmeldenPage() {
   const { t } = useI18n();
+  // Office-instelbare prijstabel; valt terug op de constanten zolang het
+  // instellingen-doc er niet is of Firestore onbereikbaar is.
+  const { instellingen } = useInstellingen();
+  const { buurten, geladen: buurtenGeladen } = useActieveBuurten();
 
   const [type, setType] = useState<KlantType>("huishouden");
   const [frequentie, setFrequentie] = useState<Frequentie>(2);
@@ -40,7 +47,7 @@ export default function AanmeldenPage() {
   const [error, setError] = useState<string | null>(null);
 
   const configured = useMemo(() => isFirebaseConfigured(), []);
-  const prijs = prijsVoor(type, frequentie);
+  const prijs = instellingen.prijzen[type][frequentie];
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -174,7 +181,7 @@ export default function AanmeldenPage() {
                     >
                       <span className="font-bold">{t(FREQ_LABEL[f])}</span>
                       <span className={`text-sm font-semibold ${frequentie === f ? "text-white/80" : "text-kliko-navy/60"}`}>
-                        {formatUsd(prijsVoor(type, f))}
+                        {formatUsd(instellingen.prijzen[type][f])}
                         {t("price.month")}
                       </span>
                     </button>
@@ -221,7 +228,14 @@ export default function AanmeldenPage() {
                     <label htmlFor="wijk" className="mb-1.5 block text-sm font-bold text-kliko-navy">
                       {t("form.wijk")}
                     </label>
-                    <input id="wijk" className={inputCls} value={wijk} onChange={(e) => setWijk(e.target.value)} />
+                    <BuurtVeld
+                      id="wijk"
+                      value={wijk}
+                      onChange={setWijk}
+                      buurten={buurten}
+                      geladen={buurtenGeladen}
+                      className={inputCls}
+                    />
                   </div>
                   <div>
                     <label htmlFor="klikos" className="mb-1.5 block text-sm font-bold text-kliko-navy">

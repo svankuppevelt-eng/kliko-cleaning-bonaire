@@ -3,29 +3,32 @@
 import { LogoPrimary, LogoMark } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useI18n } from "@/lib/i18n";
-import { PRIJS_PER_MAAND } from "@/lib/data/prijzen";
-
-const PLANS = [
-  {
-    key: "home",
-    freqs: [
-      { f: "price.f1", p: PRIJS_PER_MAAND.huishouden[1] },
-      { f: "price.f2", p: PRIJS_PER_MAAND.huishouden[2] },
-      { f: "price.f4", p: PRIJS_PER_MAAND.huishouden[4] },
-    ],
-  },
-  {
-    key: "biz",
-    freqs: [
-      { f: "price.f1", p: PRIJS_PER_MAAND.bedrijf[1] },
-      { f: "price.f2", p: PRIJS_PER_MAAND.bedrijf[2] },
-      { f: "price.f4", p: PRIJS_PER_MAAND.bedrijf[4] },
-    ],
-  },
-];
+import { useInstellingen } from "@/lib/use-instellingen";
 
 export default function Home() {
   const { t } = useI18n();
+  // Prijzen uit de office-instellingen (instellingen/algemeen), met de
+  // constanten als fallback zolang het doc er niet is of Firestore stil is.
+  const { instellingen } = useInstellingen();
+
+  const plans = [
+    {
+      key: "home",
+      freqs: [
+        { f: "price.f1", p: instellingen.prijzen.huishouden[1] },
+        { f: "price.f2", p: instellingen.prijzen.huishouden[2] },
+        { f: "price.f4", p: instellingen.prijzen.huishouden[4] },
+      ],
+    },
+    {
+      key: "biz",
+      freqs: [
+        { f: "price.f1", p: instellingen.prijzen.bedrijf[1] },
+        { f: "price.f2", p: instellingen.prijzen.bedrijf[2] },
+        { f: "price.f4", p: instellingen.prijzen.bedrijf[4] },
+      ],
+    },
+  ];
 
   return (
     <div className="flex flex-1 flex-col">
@@ -141,7 +144,7 @@ export default function Home() {
             {t("price.sub")}
           </p>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {PLANS.map((plan) => (
+            {plans.map((plan) => (
               <div
                 key={plan.key}
                 className="rounded-2xl border border-kliko-navy/10 bg-white p-6 shadow-sm sm:p-8"

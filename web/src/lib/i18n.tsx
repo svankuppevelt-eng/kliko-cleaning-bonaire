@@ -222,6 +222,61 @@ const pap: Dict = {
   "login.to.vandaag": "Bai bo bista di dia",
   "beheer.alleenkantoor":
     "E página aki ta pa ofisina so. Nos ta manda bo pa bo bista di dia.",
+  // Klant-CRUD + buurten + instellingen (Fase 3). LET OP: Papiamentu laten nakijken door Roderick.
+  "beheer.nieuw": "Kliente nobo",
+  "nieuw.title": "Kliente nobo",
+  "nieuw.sub": "Krea un kliente ku mesora un abono.",
+  "nieuw.gegevens": "Datos di kliente",
+  "nieuw.prijs.hint":
+    "E preis ta bin outomátikamente for di e tabla di tarifa. Bo por kambia e manualmente.",
+  "nieuw.submit": "Krea kliente",
+  "nieuw.err.save": "No por a krea e kliente. Purba atrobe.",
+  "form.buurt.kies": "Skohe un bario",
+  "form.buurt.anders": "Otro / no den e lista",
+  "form.buurt.anders.placeholder": "Yena e bario",
+  "abo.freq": "Kuantu biaha pa luna",
+  "abo.prijs": "Preis pa luna (dòler)",
+  "abo.status": "Status",
+  "detail.edit": "Editá",
+  "detail.save": "Warda",
+  "detail.cancel": "Kanselá",
+  "detail.busy": "Ta warda...",
+  "detail.err.save": "No por a warda e kambionan. Purba atrobe.",
+  "detail.delete": "Kita kliente",
+  "detail.delete.confirm":
+    "Bo ta sigur ku bo ke kita e kliente aki? Su abononan tambe lo wòrdu kitá. E historia di limpiesa ta keda wardá.",
+  "detail.err.delete": "No por a kita e kliente. Purba atrobe.",
+  "shell.buurten": "Barionan",
+  "buurten.title": "Barionan",
+  "buurten.sub":
+    "Maneha e lista di bario ku ta sali den e formularionan i e filternan.",
+  "buurten.loading": "Ta karga barionan...",
+  "buurten.empty": "No tin bario ainda.",
+  "buurten.err.load": "No por a karga e barionan. Refreská e página.",
+  "buurten.err.save": "No por a warda. Purba atrobe.",
+  "buurten.new.placeholder": "Nòmber di bario nobo",
+  "buurten.add": "Agregá",
+  "buurten.actief": "Aktivo",
+  "buurten.inactief": "No aktivo",
+  "buurten.delete": "Kita",
+  "buurten.delete.confirm":
+    "Kita e bario aki for di e lista? Klientenan eksistente ta keda ku e nòmber.",
+  "buurten.omhoog": "Move ariba",
+  "buurten.omlaag": "Move abou",
+  "shell.instellingen": "Konfigurashon",
+  "inst.title": "Konfigurashon",
+  "inst.sub":
+    "Tarifa i kapasidat. Kambionan ta konta mesora pa e wèpsait i e formularionan.",
+  "inst.loading": "Ta karga...",
+  "inst.prijzen": "Tarifa pa luna (dòler)",
+  "inst.capaciteit": "Kapasidat pa dia",
+  "inst.capaciteit.hint":
+    "Kantidat máksimo di kliko ku e tim por hasi limpi riba 1 dia.",
+  "inst.save": "Warda",
+  "inst.saved": "Kambionan wardá.",
+  "inst.err.save": "No por a warda. Purba atrobe.",
+  "inst.readonly":
+    "Solamente doñonan por kambia e konfigurashon. Bo por wak e balornan.",
 };
 
 const nl: Dict = {
@@ -426,6 +481,61 @@ const nl: Dict = {
   "login.to.vandaag": "Naar jouw dagoverzicht",
   "beheer.alleenkantoor":
     "Deze pagina is alleen voor kantoor. Je wordt doorgestuurd naar jouw dagoverzicht.",
+  // Klant-CRUD + buurten + instellingen (Fase 3).
+  "beheer.nieuw": "Nieuwe klant",
+  "nieuw.title": "Nieuwe klant",
+  "nieuw.sub": "Maak een klant aan met meteen een abonnement.",
+  "nieuw.gegevens": "Klantgegevens",
+  "nieuw.prijs.hint":
+    "De prijs komt automatisch uit de prijstabel. Je kunt hem handmatig aanpassen.",
+  "nieuw.submit": "Klant aanmaken",
+  "nieuw.err.save": "De klant aanmaken is niet gelukt. Probeer het opnieuw.",
+  "form.buurt.kies": "Kies een wijk",
+  "form.buurt.anders": "Anders / niet in de lijst",
+  "form.buurt.anders.placeholder": "Vul de wijk in",
+  "abo.freq": "Hoe vaak per maand",
+  "abo.prijs": "Prijs per maand (dollar)",
+  "abo.status": "Status",
+  "detail.edit": "Bewerken",
+  "detail.save": "Opslaan",
+  "detail.cancel": "Annuleren",
+  "detail.busy": "Opslaan...",
+  "detail.err.save": "Opslaan is niet gelukt. Probeer het opnieuw.",
+  "detail.delete": "Klant verwijderen",
+  "detail.delete.confirm":
+    "Weet je zeker dat je deze klant wilt verwijderen? De abonnementen worden ook verwijderd. De schoonmaak-historie blijft bewaard.",
+  "detail.err.delete": "De klant verwijderen is niet gelukt. Probeer het opnieuw.",
+  "shell.buurten": "Buurten",
+  "buurten.title": "Buurten",
+  "buurten.sub":
+    "Beheer de lijst met buurten die in de formulieren en filters verschijnt.",
+  "buurten.loading": "Buurten laden...",
+  "buurten.empty": "Nog geen buurten.",
+  "buurten.err.load": "De buurten laden is niet gelukt. Vernieuw de pagina.",
+  "buurten.err.save": "Opslaan is niet gelukt. Probeer het opnieuw.",
+  "buurten.new.placeholder": "Naam nieuwe buurt",
+  "buurten.add": "Toevoegen",
+  "buurten.actief": "Actief",
+  "buurten.inactief": "Inactief",
+  "buurten.delete": "Verwijderen",
+  "buurten.delete.confirm":
+    "Deze buurt uit de lijst verwijderen? Bestaande klanten houden de naam gewoon.",
+  "buurten.omhoog": "Omhoog",
+  "buurten.omlaag": "Omlaag",
+  "shell.instellingen": "Instellingen",
+  "inst.title": "Instellingen",
+  "inst.sub":
+    "Tarieven en capaciteit. Wijzigingen gelden meteen voor de website en de formulieren.",
+  "inst.loading": "Laden...",
+  "inst.prijzen": "Prijzen per maand (dollar)",
+  "inst.capaciteit": "Capaciteit per dag",
+  "inst.capaciteit.hint":
+    "Maximaal aantal kliko's dat het team op 1 dag kan reinigen.",
+  "inst.save": "Opslaan",
+  "inst.saved": "Wijzigingen opgeslagen.",
+  "inst.err.save": "Opslaan is niet gelukt. Probeer het opnieuw.",
+  "inst.readonly":
+    "Alleen eigenaars kunnen de instellingen wijzigen. Je kunt de waarden wel bekijken.",
 };
 
 const en: Dict = {
@@ -628,6 +738,61 @@ const en: Dict = {
   "login.to.vandaag": "Go to your day overview",
   "beheer.alleenkantoor":
     "This page is for office only. Redirecting to your day overview.",
+  // Customer CRUD + neighbourhoods + settings (Fase 3).
+  "beheer.nieuw": "New customer",
+  "nieuw.title": "New customer",
+  "nieuw.sub": "Create a customer together with a subscription.",
+  "nieuw.gegevens": "Customer details",
+  "nieuw.prijs.hint":
+    "The price is filled automatically from the price table. You can override it manually.",
+  "nieuw.submit": "Create customer",
+  "nieuw.err.save": "Creating the customer failed. Please try again.",
+  "form.buurt.kies": "Choose a neighbourhood",
+  "form.buurt.anders": "Other / not in the list",
+  "form.buurt.anders.placeholder": "Enter the neighbourhood",
+  "abo.freq": "How often per month",
+  "abo.prijs": "Price per month (dollars)",
+  "abo.status": "Status",
+  "detail.edit": "Edit",
+  "detail.save": "Save",
+  "detail.cancel": "Cancel",
+  "detail.busy": "Saving...",
+  "detail.err.save": "Saving failed. Please try again.",
+  "detail.delete": "Delete customer",
+  "detail.delete.confirm":
+    "Are you sure you want to delete this customer? The subscriptions will be deleted too. The cleaning history is kept.",
+  "detail.err.delete": "Deleting the customer failed. Please try again.",
+  "shell.buurten": "Neighbourhoods",
+  "buurten.title": "Neighbourhoods",
+  "buurten.sub":
+    "Manage the list of neighbourhoods shown in the forms and filters.",
+  "buurten.loading": "Loading neighbourhoods...",
+  "buurten.empty": "No neighbourhoods yet.",
+  "buurten.err.load": "Loading the neighbourhoods failed. Refresh the page.",
+  "buurten.err.save": "Saving failed. Please try again.",
+  "buurten.new.placeholder": "New neighbourhood name",
+  "buurten.add": "Add",
+  "buurten.actief": "Active",
+  "buurten.inactief": "Inactive",
+  "buurten.delete": "Delete",
+  "buurten.delete.confirm":
+    "Remove this neighbourhood from the list? Existing customers keep the name.",
+  "buurten.omhoog": "Move up",
+  "buurten.omlaag": "Move down",
+  "shell.instellingen": "Settings",
+  "inst.title": "Settings",
+  "inst.sub":
+    "Pricing and capacity. Changes apply immediately to the website and the forms.",
+  "inst.loading": "Loading...",
+  "inst.prijzen": "Monthly prices (dollars)",
+  "inst.capaciteit": "Capacity per day",
+  "inst.capaciteit.hint":
+    "Maximum number of bins the team can clean in 1 day.",
+  "inst.save": "Save",
+  "inst.saved": "Changes saved.",
+  "inst.err.save": "Saving failed. Please try again.",
+  "inst.readonly":
+    "Only owners can change the settings. You can still view the values.",
 };
 
 const DICTS: Record<Lang, Dict> = { pap, nl, en };

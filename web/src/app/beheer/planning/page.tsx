@@ -1,6 +1,7 @@
 "use client";
 
-// Office weekplanning: vaste schoonmaakdagen (ma t/m za) met capaciteit per dag.
+// Office weekplanning: vaste schoonmaakdagen (ma t/m za) met capaciteit per dag
+// (office-instelbaar via /beheer/instellingen) en filter op buurt.
 // Alleen actieve abonnementen. Vaste dag wijzigen = optimistic update + rollback.
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -10,7 +11,9 @@ import {
   listKlanten,
   updateAbonnement,
 } from "@/lib/data/klanten";
-import { CONTAINERS_PER_DAG, WERKDAGEN } from "@/lib/data/planning";
+import { WERKDAGEN } from "@/lib/data/planning";
+import { useInstellingen } from "@/lib/use-instellingen";
+import { useActieveBuurten } from "@/lib/use-buurten";
 import type { Abonnement, Klant, Weekdag } from "@/lib/data/types";
 
 const FREQ_LABEL: Record<number, string> = {
@@ -26,16 +29,20 @@ interface Rij {
 
 export default function PlanningPage() {
   const { t } = useI18n();
+  const { instellingen } = useInstellingen();
+  const { buurten } = useActieveBuurten();
+  const capaciteit = instellingen.containersPerDag;
 
-  const [rijen, setRijen] = useState<Rij[] | null>(null);
+  // Zonder Firebase-config meteen een lege lijst (lazy initializer).
+  const [rijen, setRijen] = useState<Rij[] | null>(() =>
+    isFirebaseConfigured() ? null : []
+  );
   const [loadError, setLoadError] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [buurtFilter, setBuurtFilter] = useState("");
 
   useEffect(() => {
-    if (!isFirebaseConfigured()) {
-      setRijen([]);
-      return;
-    }
+    if (!isFirebaseConfigured()) return;
     Promise.all([listKlanten(), listAbonnementenPerKlant()])
       .then(([klanten, abosPerKlant]) => {
         const r: Rij[] = [];
@@ -54,9 +61,28 @@ export default function PlanningPage() {
       .catch(() => setLoadError(true));
   }, []);
 
+  // Filter-opties: actieve buurten + wijken van klanten buiten de lijst.
+  const filterOpties = useMemo(() => {
+    const uitLijst = buurten.map((b) => b.naam);
+    const extra = Array.from(
+      new Set((rijen ?? []).map((r) => r.klant.wijk).filter(Boolean))
+    )
+      .filter((w) => !uitLijst.includes(w))
+      .sort();
+    return [...uitLijst, ...extra];
+  }, [buurten, rijen]);
+
+  const gefilterd = useMemo(
+    () =>
+      buurtFilter
+        ? (rijen ?? []).filter((r) => r.klant.wijk === buurtFilter)
+        : (rijen ?? []),
+    [rijen, buurtFilter]
+  );
+
   const nietIngepland = useMemo(
-    () => (rijen ?? []).filter((r) => !r.abo.vasteDag),
-    [rijen]
+    () => gefilterd.filter((r) => !r.abo.vasteDag),
+    [gefilterd]
   );
 
   async function wijzigDag(rij: Rij, nieuweDag: Weekdag | null) {
@@ -129,6 +155,21 @@ export default function PlanningPage() {
       </h1>
       <p className="mt-1 text-sm text-kliko-navy/60">{t("plan.sub")}</p>
 
+      {/* Filter op buurt */}
+      <div className="mt-4">
+        <select
+          value={buurtFilter}
+          onChange={(e) => setBuurtFilter(e.target.value)}
+          aria-label={t("beheer.filter.wijk")}
+          className="w-full rounded-xl border border-kliko-navy/20 bg-white px-3 py-2.5 text-sm font-semibold text-kliko-navy focus:border-kliko-blue focus:outline-none sm:w-auto"
+        >
+          <option value="">{t("beheer.filter.wijk")}</option>
+          {filterOpties.map((w) => (
+            <option key={w} value={w}>{w}</option>
+          ))}
+        </select>
+      </div>
+
       {saveError && (
         <p
           role="alert"
@@ -170,15 +211,16 @@ export default function PlanningPage() {
           {/* Week-overzicht: op mobiel onder elkaar, op breed scherm in kolommen */}
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {WERKDAGEN.map((dag) => {
-              const vanDag = rijen.filter((r) => r.abo.vasteDag === dag);
-              const somKlikos = vanDag.reduce(
-                (som, r) => som + (r.klant.aantalKlikos || 0),
-                0
-              );
-              const over = somKlikos > CONTAINERS_PER_DAG;
+              const vanDag = gefilterd.filter((r) => r.abo.vasteDag === dag);
+              // Capaciteit altijd over ALLE klanten van de dag rekenen, ook
+              // met een actief buurt-filter: het is een fysieke daglimiet.
+              const somKlikos = rijen
+                .filter((r) => r.abo.vasteDag === dag)
+                .reduce((som, r) => som + (r.klant.aantalKlikos || 0), 0);
+              const over = somKlikos > capaciteit;
               const pct = Math.min(
                 100,
-                Math.round((somKlikos / CONTAINERS_PER_DAG) * 100)
+                Math.round((somKlikos / capaciteit) * 100)
               );
               // Groeperen per wijk (rijen zijn al op wijk + naam gesorteerd).
               const wijken = Array.from(new Set(vanDag.map((r) => r.klant.wijk)));
@@ -194,7 +236,7 @@ export default function PlanningPage() {
                         over ? "text-kliko-red" : "text-kliko-navy/60"
                       }`}
                     >
-                      {somKlikos} / {CONTAINERS_PER_DAG} {t("beheer.klikos")}
+                      {somKlikos} / {capaciteit} {t("beheer.klikos")}
                     </span>
                   </div>
 
@@ -205,7 +247,7 @@ export default function PlanningPage() {
                     aria-label={t("plan.cap.label")}
                     aria-valuenow={somKlikos}
                     aria-valuemin={0}
-                    aria-valuemax={CONTAINERS_PER_DAG}
+                    aria-valuemax={capaciteit}
                   >
                     <div
                       className={`h-full rounded-full ${

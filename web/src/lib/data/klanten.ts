@@ -10,6 +10,7 @@ import {
   query,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
 import type { Abonnement, Klant } from "./types";
@@ -32,6 +33,33 @@ export async function listKlanten(): Promise<Klant[]> {
 export async function getKlant(id: string): Promise<Klant | null> {
   const snap = await getDoc(doc(getDb(), KLANTEN, id));
   return snap.exists() ? ({ id: snap.id, ...snap.data() } as Klant) : null;
+}
+
+/** Klant-velden bijwerken (office bewerk-formulier). */
+export async function updateKlant(
+  id: string,
+  data: Partial<Omit<Klant, "id">>
+): Promise<void> {
+  await updateDoc(doc(getDb(), KLANTEN, id), data);
+}
+
+/**
+ * Klant + alle gekoppelde abonnementen verwijderen (1 batch).
+ * De reinigingen-historie (collectie `reinigingen`) blijft bewust staan:
+ * die docs zijn gedenormaliseerd (klantnaam/adres staan erin) en blijven
+ * dus leesbaar, ook nadat de klant is verwijderd.
+ */
+export async function deleteKlantMetAbonnementen(
+  klantId: string
+): Promise<void> {
+  const db = getDb();
+  const abos = await getDocs(
+    query(collection(db, ABONNEMENTEN), where("klantId", "==", klantId))
+  );
+  const batch = writeBatch(db);
+  for (const d of abos.docs) batch.delete(d.ref);
+  batch.delete(doc(db, KLANTEN, klantId));
+  await batch.commit();
 }
 
 export async function createAbonnement(

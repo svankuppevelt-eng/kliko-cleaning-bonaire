@@ -69,12 +69,18 @@ export function OfficeShell({ children }: { children: ReactNode }) {
             <Link href="/beheer">
               <LogoPrimary height={40} priority />
             </Link>
-            <nav className="hidden items-center gap-5 text-sm font-semibold text-kliko-navy sm:flex">
+            <nav className="hidden flex-wrap items-center gap-x-5 gap-y-1 text-sm font-semibold text-kliko-navy sm:flex">
               <Link href="/beheer" className="hover:text-kliko-blue">
                 {t("shell.klanten")}
               </Link>
               <Link href="/beheer/planning" className="hover:text-kliko-blue">
                 {t("shell.planning")}
+              </Link>
+              <Link href="/beheer/buurten" className="hover:text-kliko-blue">
+                {t("shell.buurten")}
+              </Link>
+              <Link href="/beheer/instellingen" className="hover:text-kliko-blue">
+                {t("shell.instellingen")}
               </Link>
               <Link href="/vandaag" className="hover:text-kliko-blue">
                 {t("shell.vandaag")}
@@ -99,13 +105,21 @@ export function OfficeShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </div>
-        {/* Mobiele nav-rij (desktop-nav zit hierboven, verborgen op mobiel). */}
-        <nav className="mx-auto flex w-full max-w-5xl items-center gap-5 px-4 pb-2.5 text-sm font-semibold text-kliko-navy sm:hidden">
+        {/* Mobiele nav-rij (desktop-nav zit hierboven, verborgen op mobiel).
+            flex-wrap zodat de rij bij veel items netjes doorloopt op een
+            tweede regel in plaats van horizontaal te scrollen. */}
+        <nav className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 pb-2.5 text-sm font-semibold text-kliko-navy sm:hidden">
           <Link href="/beheer" className="hover:text-kliko-blue">
             {t("shell.klanten")}
           </Link>
           <Link href="/beheer/planning" className="hover:text-kliko-blue">
             {t("shell.planning")}
+          </Link>
+          <Link href="/beheer/buurten" className="hover:text-kliko-blue">
+            {t("shell.buurten")}
+          </Link>
+          <Link href="/beheer/instellingen" className="hover:text-kliko-blue">
+            {t("shell.instellingen")}
           </Link>
           <Link href="/vandaag" className="hover:text-kliko-blue">
             {t("shell.vandaag")}
