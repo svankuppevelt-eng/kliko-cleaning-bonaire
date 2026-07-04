@@ -101,23 +101,81 @@ flowchart LR
 
 ---
 
-## 5. Roadmap in 4 fases
+## 5. Roadmap in 5 fases
 
 ```mermaid
 flowchart LR
-  F0[Fase 0<br/>Fundament] --> F1[Fase 1<br/>MVP live] --> F2[Fase 2<br/>Operatie] --> F3[Fase 3<br/>Automatiseren]
+  F00[Fase 0<br/>Bedrijf oprichten] --> F0[Fase 1<br/>Fundament] --> F1[Fase 2<br/>MVP live] --> F2[Fase 3<br/>Operatie] --> F3[Fase 4<br/>Automatiseren]
 ```
 
-### Fase 0 — Fundament (zonder code)
+### Fase 0 — Bedrijfsoprichting (eerst dit, daarna alles)
+
+> Steffie & Geno hebben elk een eigen holding in Nederland. Roderich heeft een holding op
+> Bonaire. Met zijn drieën richten we een nieuwe BV/NV op Bonaire op als gezamenlijke
+> werkmaatschappij.
+
+**Aandeelhoudersstructuur**
+- Holding Steffie (NL) → aandeelhouder Kliko Cleaning Bonaire
+- Holding Geno (NL) → aandeelhouder Kliko Cleaning Bonaire
+- Holding Roderich (Bonaire) → aandeelhouder Kliko Cleaning Bonaire
+
+**Stap 1 — Notaris (verplicht)**
+- [ ] Kies een notaris op Bonaire — er zijn er twee:
+  - **Bonaire Notaris** (bonairenotaris.com)
+  - De tweede notaris op het eiland
+- [ ] Stel de oprichtingsakte en statuten op (naam, doel, aandeelhouders, verdeling)
+- [ ] Oprichting moet **in persoon** plaatsvinden — fysieke handtekeningen, geen e-sign
+- [ ] Notaris levert de akte en geeft inschrijfdocumenten mee
+
+**Stap 2 — KvK Bonaire (Chamber of Commerce)**
+- [ ] Schrijf de BV in bij de **KvK Bonaire** (bonairechamber.com)
+- [ ] Inschrijving moet in persoon met originele handtekeningen
+- [ ] Je ontvangt een KvK-nummer + uittreksel
+- [ ] Niet-ingezetenen mogen inschrijven (wonen op Bonaire is niet verplicht bij BV/NV)
+
+**Stap 3 — Vestigingsvergunning**
+- [ ] Na ontvangst KvK-uittreksel: vraag een **vestigingsvergunning** aan bij het
+  Openbaar Lichaam Bonaire (bonairegov.com)
+- [ ] Nodig voor het daadwerkelijk uitoefenen van bedrijfsactiviteiten op het eiland
+
+**Stap 4 — Belastingdienst Caribisch Nederland (ABB)**
+- [ ] Registreer de BV bij **Belastingdienst Caribisch Nederland** (belastingdienst-cn.nl)
+- [ ] Vraag een fiscaal nummer (CRIB-nummer) aan
+- [ ] ABB-aangifte verplicht bij omzet boven **USD 30.000/jaar** (dat gaan we ruim overschrijden)
+- [ ] ABB-tarief: **8%** op diensten (kliko-reiniging valt hieronder)
+- [ ] Aangifte indienen via **MijnCN** (mijncn.nl) — kwartaalaangifte of maandelijks
+- [ ] Pas prijzen aan: klanten betalen excl. ABB, factuur toont ABB apart
+
+**Stap 5 — Zakelijke bankrekening**
+- [ ] Open een zakelijke rekening bij **MCB Bonaire** (mcbbonaire.com) of Scotiabank
+  - MCB = Maduro & Curiel's Bank, gelieerd aan Scotiabank, meest gebruikt op Bonaire
+  - Rekening in USD (dollar is de valuta op Bonaire)
+- [ ] Benodigde documenten: KvK-uittreksel, statuten, ID alle bestuurders, vestigingsvergunning
+- [ ] Vraag ook een zakelijke creditcard of pinpas aan voor dagelijkse uitgaven
+
+**Stap 6 — Aandeelhoudersovereenkomst**
+- [ ] Stel (via de notaris of een advocaat) een SHA (Shareholders Agreement) op:
+  - Verdeling aandelen Steffie / Geno / Roderich (percentages + stemrecht)
+  - Wie is directeur / bestuurder?
+  - Wat als iemand wil uitstappen? (drag-along, tag-along)
+  - Winstuitkering: wanneer en hoe (via holdings NL en Bonaire)
+
+**Aandachtspunten**
+- NL holdings die aandeelhouder zijn van een Bonaire BV: let op **fiscale gevolgen**
+  in Nederland (deelnemingsvrijstelling vs. CFC-regels — laat dit checken door een
+  belastingadviseur met BES-kennis, bijv. Deloitte Caribisch Nederland)
+- Roderich kent het systeem al (heeft zelf een holding op Bonaire) → hij is de
+  praktische gids voor notaris, KvK en belastingdienst
+
+### Fase 1 — Fundament (zonder code)
 - [ ] Stack bevestigen: Next.js + Firebase + Vercel
 - [ ] Firebase-project aanmaken (Blaze plan)
 - [ ] Domeinnaam kiezen & registreren (bv. klikocleaning.com)
 - [ ] Betaalprovider kiezen: Sentoo of Stripe
-- [ ] KvK Bonaire + ABB-registratie regelen
 - [ ] Huisstijl: logo, kleuren, foto's (kliko voor/na)
 - [ ] Prijsmodel uit de calculator overzetten als config
 
-### Fase 1 — MVP: eerste klanten online
+### Fase 2 — MVP: eerste klanten online
 - [ ] Landingspagina met uitleg + tarieven
 - [ ] Aanmeldformulier → klant + abonnement in Firestore
 - [ ] CRM-overzicht: klantenlijst + klantkaart
@@ -126,7 +184,7 @@ flowchart LR
 - [ ] Eerste facturen (nog handmatig aanmaken mag)
 - [ ] Deploy naar Vercel + domein live
 
-### Fase 2 — Operatie: de dagelijkse gang
+### Fase 3 — Operatie: de dagelijkse gang
 - [ ] Weekplanning: kliko's per dag en per wijk
 - [ ] Schoonmaker-app: vandaag-lijst op telefoon
 - [ ] Afvinken "gedaan" + foto-bewijs
@@ -134,7 +192,7 @@ flowchart LR
 - [ ] "Wij komen morgen" + "gedaan ✓" naar klant
 - [ ] Capaciteits-check waarschuwt bij overboeking
 
-### Fase 3 — Automatiseren & schalen
+### Fase 4 — Automatiseren & schalen
 - [ ] Automatische maandfacturen + betaallink
 - [ ] Betaalstatus + automatische herinneringen
 - [ ] Finance-dashboard: omzet, kosten, winst, MRR, churn
@@ -155,8 +213,6 @@ flowchart LR
   = beter resultaat + efficiëntere route.
 - **WhatsApp is het kanaal** — bijna alle klantcontact loopt via WhatsApp. Bevestigingen,
   herinneringen en foto's daaromheen bouwen, niet e-mail-first.
-- **Water hergebruiken** — schaars en duur op het eiland. Een hergebruik-systeem is zowel
-  een kostenpost in het model als een sterk verkoopargument (milieuvriendelijk).
 - **Marketing = de community** — Facebook-groepen en mond-tot-mond werken sterker dan
   advertenties. Deelbare voor/na-foto's helpen.
 
@@ -164,7 +220,7 @@ flowchart LR
 
 ## 7. Zes keuzes die de bouw bepalen
 
-Zodra deze beslist zijn, kan Fase 0 starten.
+Zodra deze beslist zijn, kan Fase 1 starten (parallel aan Fase 0).
 
 1. **Stack akkoord?** Next.js + Firebase (advies), of toch binnen Streamlit proberen?
 2. **Betaalprovider?** Sentoo, Stripe, bankoverschrijving, contant — wat werkt op Bonaire?
