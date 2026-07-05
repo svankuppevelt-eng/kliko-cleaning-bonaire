@@ -222,6 +222,11 @@ const pap: Dict = {
   "vandaag.opnieuw": "Purba atrobe",
   "vandaag.storage.uit":
     "Subida di potrèt no ta aktivo ainda. Bo por warda e limpiesa sin potrèt.",
+  "vandaag.route.start": "Kuminsá ruta",
+  "vandaag.route.deel": "Ruta parti",
+  "vandaag.route.stops": "stòp",
+  "vandaag.route.gesplitst":
+    "Google Maps por habri máksimo 10 stòp pa biaha, p'esei e ruta ta partí den pida.",
   "vandaag.geenrol":
     "E kuenta aki no tin un ròl ainda. Pidi ofisina pa aktivá bo kuenta.",
   "login.to.vandaag": "Bai bo bista di dia",
@@ -251,6 +256,15 @@ const pap: Dict = {
   "detail.delete.confirm":
     "Bo ta sigur ku bo ke kita e kliente aki? Su abononan tambe lo wòrdu kitá. E historia di limpiesa ta keda wardá.",
   "detail.err.delete": "No por a kita e kliente. Purba atrobe.",
+  "hist.title": "Historia di limpiesa",
+  "hist.leeg": "No tin limpiesa registrá ainda.",
+  "hist.err": "No por a karga e historia. Refreská e página.",
+  "hist.door": "pa",
+  "hist.foto": "Potrèt",
+  "form.taal": "Idioma di preferensia",
+  "taal.pap": "Papiamentu",
+  "taal.nl": "Hulandes",
+  "taal.en": "Ingles",
   "shell.buurten": "Barionan",
   "buurten.title": "Barionan",
   "buurten.sub":
@@ -711,6 +725,11 @@ const nl: Dict = {
   "vandaag.opnieuw": "Probeer opnieuw",
   "vandaag.storage.uit":
     "Foto-upload is nog niet actief (Firebase Storage nog niet ingesteld). Je kunt de beurt wel zonder foto opslaan.",
+  "vandaag.route.start": "Start route",
+  "vandaag.route.deel": "Route deel",
+  "vandaag.route.stops": "stops",
+  "vandaag.route.gesplitst":
+    "Google Maps kan maximaal 10 stops per keer openen, daarom is de route gesplitst in delen.",
   "vandaag.geenrol":
     "Dit account heeft nog geen rol. Vraag kantoor om je account te activeren.",
   "login.to.vandaag": "Naar jouw dagoverzicht",
@@ -740,6 +759,15 @@ const nl: Dict = {
   "detail.delete.confirm":
     "Weet je zeker dat je deze klant wilt verwijderen? De abonnementen worden ook verwijderd. De schoonmaak-historie blijft bewaard.",
   "detail.err.delete": "De klant verwijderen is niet gelukt. Probeer het opnieuw.",
+  "hist.title": "Schoonmaak-historie",
+  "hist.leeg": "Nog geen schoonmaakbeurten geregistreerd.",
+  "hist.err": "De historie laden is niet gelukt. Vernieuw de pagina.",
+  "hist.door": "door",
+  "hist.foto": "Foto",
+  "form.taal": "Taalvoorkeur",
+  "taal.pap": "Papiamentu",
+  "taal.nl": "Nederlands",
+  "taal.en": "Engels",
   "shell.buurten": "Buurten",
   "buurten.title": "Buurten",
   "buurten.sub":
@@ -1324,6 +1352,11 @@ const en: Dict = {
   "vandaag.opnieuw": "Try again",
   "vandaag.storage.uit":
     "Photo upload is not active yet (Firebase Storage not set up). You can still save the cleaning without a photo.",
+  "vandaag.route.start": "Start route",
+  "vandaag.route.deel": "Route part",
+  "vandaag.route.stops": "stops",
+  "vandaag.route.gesplitst":
+    "Google Maps can open at most 10 stops at a time, so the route is split into parts.",
   "vandaag.geenrol":
     "This account has no role yet. Ask the office to activate your account.",
   "login.to.vandaag": "Go to your day overview",
@@ -1353,6 +1386,15 @@ const en: Dict = {
   "detail.delete.confirm":
     "Are you sure you want to delete this customer? The subscriptions will be deleted too. The cleaning history is kept.",
   "detail.err.delete": "Deleting the customer failed. Please try again.",
+  "hist.title": "Cleaning history",
+  "hist.leeg": "No cleanings recorded yet.",
+  "hist.err": "Loading the history failed. Refresh the page.",
+  "hist.door": "by",
+  "hist.foto": "Photo",
+  "form.taal": "Preferred language",
+  "taal.pap": "Papiamentu",
+  "taal.nl": "Dutch",
+  "taal.en": "English",
   "shell.buurten": "Neighbourhoods",
   "buurten.title": "Neighbourhoods",
   "buurten.sub":

@@ -13,6 +13,13 @@ export type Weekdag = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type ReinigingStatus = "gedaan" | "overgeslagen";
 
+/**
+ * Taalvoorkeur van de klant voor mails (zelfde codes als de UI-talen).
+ * Bewust hier gedefinieerd (en niet geimporteerd uit lib/i18n) zodat de
+ * data-laag geen React-bestanden importeert.
+ */
+export type KlantTaal = "pap" | "nl" | "en";
+
 export interface Klant {
   id: string;
   naam: string;
@@ -26,6 +33,11 @@ export interface Klant {
   /** ISO-datum/tijd string (Firestore serverdata via new Date().toISOString()). */
   aangemaaktOp: string;
   notitie?: string;
+  /**
+   * Taalvoorkeur voor klant-mails (factuur, herinnering, ...).
+   * Optioneel: bestaande docs zonder dit veld vallen terug op "nl".
+   */
+  taal?: KlantTaal;
 }
 
 export interface Abonnement {

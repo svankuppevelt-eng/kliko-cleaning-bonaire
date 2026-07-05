@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { LogoPrimary } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { useI18n } from "@/lib/i18n";
+import { standaardTekst, useI18n } from "@/lib/i18n";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createAbonnement, createKlant } from "@/lib/data/klanten";
 import {
@@ -20,7 +20,7 @@ import { FREQUENTIES, formatUsd } from "@/lib/data/prijzen";
 import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
 import { BuurtVeld } from "@/components/buurt-veld";
-import type { Frequentie, KlantType } from "@/lib/data/types";
+import type { Frequentie, KlantTaal, KlantType } from "@/lib/data/types";
 
 const FREQ_LABEL: Record<Frequentie, string> = {
   1: "price.f1",
@@ -47,6 +47,10 @@ export default function AanmeldenPage() {
   const [wijk, setWijk] = useState("");
   const [aantalKlikos, setAantalKlikos] = useState(1);
   const [notitie, setNotitie] = useState("");
+  // Taalvoorkeur voor klant-mails. null = nog niet aangeraakt: dan volgt hij
+  // de taal waarin de bezoeker de site bekijkt (de taalwissel bovenaan).
+  const [taalKeuze, setTaalKeuze] = useState<KlantTaal | null>(null);
+  const klantTaal: KlantTaal = taalKeuze ?? lang;
 
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -83,6 +87,7 @@ export default function AanmeldenPage() {
         wijk: wijk.trim(),
         aantalKlikos: Math.max(1, aantalKlikos),
         type,
+        taal: klantTaal,
         aangemaaktOp: new Date().toISOString(),
         ...(notitie.trim() ? { notitie: notitie.trim() } : {}),
       });
@@ -94,19 +99,24 @@ export default function AanmeldenPage() {
         status: "actief",
         startdatum: new Date().toISOString().slice(0, 10),
       });
-      // Bevestigingsmail in de taal waarin de bezoeker zich aanmeldde.
-      // Een mailfout mag de aanmelding NOOIT breken: de klant is al
-      // opgeslagen, dus fouten worden hier stil genegeerd (verstuurMail
-      // gooit zelf ook nooit).
+      // Bevestigingsmail in de gekozen taalvoorkeur van de klant (standaard
+      // de taal waarin de bezoeker de site bekijkt). Een mailfout mag de
+      // aanmelding NOOIT breken: de klant is al opgeslagen, dus fouten
+      // worden hier stil genegeerd (verstuurMail gooit zelf ook nooit).
       try {
         const overrides = await getMailTemplates();
-        const tekst = effectieveMailTekst(overrides, "aanmelding", lang);
+        const tekst = effectieveMailTekst(overrides, "aanmelding", klantTaal);
         const vars = {
           naam: naam.trim(),
-          type: t(type === "huishouden" ? "price.home" : "price.biz"),
-          frequentie: t(FREQ_LABEL[frequentie]),
+          // Labels via standaardTekst in de klant-taal, zodat de mail ook
+          // klopt als de bezoeker de site in een andere taal bekijkt.
+          type: standaardTekst(
+            klantTaal,
+            type === "huishouden" ? "price.home" : "price.biz"
+          ),
+          frequentie: standaardTekst(klantTaal, FREQ_LABEL[frequentie]),
           datum: new Date().toLocaleDateString(
-            lang === "en" ? "en-GB" : "nl-NL"
+            klantTaal === "en" ? "en-GB" : "nl-NL"
           ),
         };
         await verstuurMail({
@@ -280,6 +290,21 @@ export default function AanmeldenPage() {
                       onChange={(e) => setAantalKlikos(Number(e.target.value) || 1)}
                       inputMode="numeric"
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="taal" className="mb-1.5 block text-sm font-bold text-kliko-navy">
+                      {t("form.taal")}
+                    </label>
+                    <select
+                      id="taal"
+                      className={inputCls}
+                      value={klantTaal}
+                      onChange={(e) => setTaalKeuze(e.target.value as KlantTaal)}
+                    >
+                      <option value="pap">{t("taal.pap")}</option>
+                      <option value="nl">{t("taal.nl")}</option>
+                      <option value="en">{t("taal.en")}</option>
+                    </select>
                   </div>
                   <div className="sm:col-span-2">
                     <label htmlFor="notitie" className="mb-1.5 block text-sm font-bold text-kliko-navy">

@@ -104,17 +104,19 @@ export default function FactuurDetailPage() {
       // PDF-bijlage: zelfde template als de download-knop, base64 voor Resend.
       const { factuurPdfBijlage } = await import("@/lib/facturen-pdf");
       const bijlage = await factuurPdfBijlage(factuur);
-      // Mailtekst in de actieve office-taal (klant-taalvoorkeur is er nog
-      // niet als veld; office kiest de taal via de taalwissel).
+      // Mailtekst in de taalvoorkeur van de klant (klant.taal); klanten
+      // zonder voorkeur (oudere docs) vallen terug op Nederlands. De
+      // office-UI-taal bepaalt hier bewust NIET de mailtaal.
+      const klantTaal = klant?.taal ?? "nl";
       const overrides = await getMailTemplates();
-      const tekst = effectieveMailTekst(overrides, soort, lang);
+      const tekst = effectieveMailTekst(overrides, soort, klantTaal);
       const vars = {
         naam: factuur.klantNaam,
         factuurnummer: factuur.nummer,
         bedrag: formatUsdCent(factuur.totaalCentIncl),
         periode: maandLabel(factuur.periode),
-        vervaldatum: formatDatum(factuur.vervaldatum, lang),
-        datum: formatDatum(new Date().toISOString(), lang),
+        vervaldatum: formatDatum(factuur.vervaldatum, klantTaal),
+        datum: formatDatum(new Date().toISOString(), klantTaal),
       };
       const resultaat = await verstuurMail({
         to,

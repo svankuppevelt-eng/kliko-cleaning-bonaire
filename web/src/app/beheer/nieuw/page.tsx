@@ -17,6 +17,7 @@ import { BuurtVeld } from "@/components/buurt-veld";
 import type {
   AbonnementStatus,
   Frequentie,
+  KlantTaal,
   KlantType,
   Weekdag,
 } from "@/lib/data/types";
@@ -49,6 +50,8 @@ export default function NieuweKlantPage() {
   const [wijk, setWijk] = useState("");
   const [aantalKlikos, setAantalKlikos] = useState(1);
   const [type, setType] = useState<KlantType>("huishouden");
+  // Taalvoorkeur voor klant-mails; standaard Nederlands (het mail-vangnet).
+  const [taal, setTaal] = useState<KlantTaal>("nl");
   const [notitie, setNotitie] = useState("");
 
   // Abonnement
@@ -98,6 +101,7 @@ export default function NieuweKlantPage() {
         wijk: wijk.trim(),
         aantalKlikos: Math.max(1, aantalKlikos),
         type,
+        taal,
         aangemaaktOp: new Date().toISOString(),
         ...(notitie.trim() ? { notitie: notitie.trim() } : {}),
       });
@@ -191,6 +195,19 @@ export default function NieuweKlantPage() {
               >
                 <option value="huishouden">{t("price.home")}</option>
                 <option value="bedrijf">{t("price.biz")}</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="taal" className={labelCls}>{t("form.taal")}</label>
+              <select
+                id="taal"
+                className={selectCls}
+                value={taal}
+                onChange={(e) => setTaal(e.target.value as KlantTaal)}
+              >
+                <option value="pap">{t("taal.pap")}</option>
+                <option value="nl">{t("taal.nl")}</option>
+                <option value="en">{t("taal.en")}</option>
               </select>
             </div>
             <div className="sm:col-span-2">

@@ -15,6 +15,7 @@ import {
   updateAbonnement,
   updateKlant,
 } from "@/lib/data/klanten";
+import { listReinigingenVoorKlant } from "@/lib/data/reinigingen";
 import { formatUsd } from "@/lib/data/prijzen";
 import { WERKDAGEN } from "@/lib/data/planning";
 import { useActieveBuurten } from "@/lib/use-buurten";
@@ -24,7 +25,9 @@ import type {
   AbonnementStatus,
   Frequentie,
   Klant,
+  KlantTaal,
   KlantType,
+  Reiniging,
   Weekdag,
 } from "@/lib/data/types";
 
@@ -58,6 +61,7 @@ interface EditState {
   wijk: string;
   aantalKlikos: string;
   type: KlantType;
+  taal: KlantTaal;
   notitie: string;
   // Abonnement (alleen als er een abonnement is)
   frequentie: Frequentie;
@@ -78,6 +82,9 @@ export default function KlantDetailPage() {
   );
   const [abos, setAbos] = useState<Abonnement[]>([]);
   const [error, setError] = useState(false);
+  // Schoonmaak-historie: null = nog aan het laden.
+  const [historie, setHistorie] = useState<Reiniging[] | null>(null);
+  const [histFout, setHistFout] = useState(false);
 
   const [edit, setEdit] = useState<EditState | null>(null);
   const [busy, setBusy] = useState(false);
@@ -91,6 +98,10 @@ export default function KlantDetailPage() {
         setAbos(a);
       })
       .catch(() => setError(true));
+    // Historie los laden: een fout hier mag de klantkaart zelf niet blokkeren.
+    listReinigingenVoorKlant(params.id)
+      .then(setHistorie)
+      .catch(() => setHistFout(true));
   }, [params?.id]);
 
   const hoofdAbo = abos[0] as Abonnement | undefined;
@@ -106,6 +117,7 @@ export default function KlantDetailPage() {
       wijk: klant.wijk,
       aantalKlikos: String(klant.aantalKlikos),
       type: klant.type,
+      taal: klant.taal ?? "nl",
       notitie: klant.notitie ?? "",
       frequentie: hoofdAbo?.frequentie ?? 2,
       prijs: hoofdAbo ? String(hoofdAbo.prijsPerMaand) : "",
@@ -143,6 +155,7 @@ export default function KlantDetailPage() {
       wijk: edit.wijk.trim(),
       aantalKlikos: klikosNum,
       type: edit.type,
+      taal: edit.taal,
       notitie: edit.notitie.trim(),
     };
     const nieuweAbo: Abonnement | undefined = hoofdAbo
@@ -172,6 +185,7 @@ export default function KlantDetailPage() {
         wijk: nieuweKlant.wijk,
         aantalKlikos: nieuweKlant.aantalKlikos,
         type: nieuweKlant.type,
+        taal: nieuweKlant.taal ?? "nl",
         notitie: nieuweKlant.notitie ?? "",
       });
       if (nieuweAbo) {
@@ -276,6 +290,14 @@ export default function KlantDetailPage() {
                 <select id="e-type" className={selectCls} value={edit.type} onChange={(e) => setEdit({ ...edit, type: e.target.value as KlantType })}>
                   <option value="huishouden">{t("price.home")}</option>
                   <option value="bedrijf">{t("price.biz")}</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="e-taal" className={labelCls}>{t("form.taal")}</label>
+                <select id="e-taal" className={selectCls} value={edit.taal} onChange={(e) => setEdit({ ...edit, taal: e.target.value as KlantTaal })}>
+                  <option value="pap">{t("taal.pap")}</option>
+                  <option value="nl">{t("taal.nl")}</option>
+                  <option value="en">{t("taal.en")}</option>
                 </select>
               </div>
               <div className="sm:col-span-2">
@@ -422,6 +444,10 @@ export default function KlantDetailPage() {
                 <dt className="font-bold text-kliko-navy/60">{t("form.klikos")}</dt>
                 <dd className="text-kliko-navy">{klant.aantalKlikos}</dd>
               </div>
+              <div>
+                <dt className="font-bold text-kliko-navy/60">{t("form.taal")}</dt>
+                <dd className="text-kliko-navy">{t(`taal.${klant.taal ?? "nl"}`)}</dd>
+              </div>
             </dl>
           </div>
 
@@ -457,6 +483,85 @@ export default function KlantDetailPage() {
                         {t(`status.${abo.status}`)}
                       </span>
                     </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Schoonmaak-historie: alle beurten (gedaan/overgeslagen) van deze klant. */}
+          <div className="rounded-2xl border border-kliko-navy/10 bg-white p-5 shadow-sm sm:p-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
+              {t("hist.title")}
+            </h2>
+            {histFout ? (
+              <p className="mt-2 text-sm font-semibold text-kliko-red">
+                {t("hist.err")}
+              </p>
+            ) : historie === null ? (
+              <p className="mt-2 text-sm font-semibold text-kliko-navy/50">
+                {t("beheer.loading")}
+              </p>
+            ) : historie.length === 0 ? (
+              <p className="mt-2 text-sm font-semibold text-kliko-navy/50">
+                {t("hist.leeg")}
+              </p>
+            ) : (
+              <ul className="mt-2 flex flex-col divide-y divide-kliko-navy/10">
+                {historie.map((r) => (
+                  <li
+                    key={r.id}
+                    className="flex flex-wrap items-center justify-between gap-2 py-3"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      {r.fotoUrl && (
+                        // Klikbare thumbnail van de bewijsfoto (opent origineel).
+                        <a
+                          href={r.fotoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0"
+                          title={t("hist.foto")}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={r.fotoUrl}
+                            alt={t("hist.foto")}
+                            className="h-11 w-11 rounded-lg border border-kliko-navy/10 object-cover"
+                          />
+                        </a>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-kliko-navy">
+                          {new Date(`${r.datum}T12:00:00`).toLocaleDateString(
+                            lang === "en" ? "en-GB" : "nl-NL"
+                          )}
+                        </p>
+                        {r.uitgevoerdDoorNaam && (
+                          <p className="truncate text-xs text-kliko-navy/55">
+                            {t("hist.door")} {r.uitgevoerdDoorNaam}
+                          </p>
+                        )}
+                        {r.status === "overgeslagen" && r.redenOverslaan && (
+                          <p className="text-xs font-semibold text-kliko-navy/70">
+                            {r.redenOverslaan}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                        r.status === "gedaan"
+                          ? "bg-kliko-blue/10 text-kliko-blue"
+                          : "bg-kliko-yellow/25 text-kliko-navy"
+                      }`}
+                    >
+                      {t(
+                        r.status === "gedaan"
+                          ? "vandaag.status.gedaan"
+                          : "vandaag.status.overgeslagen"
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>

@@ -51,15 +51,30 @@ export default function PlanningPage() {
             if (abo.status === "actief") r.push({ klant, abo });
           }
         }
-        r.sort(
-          (a, b) =>
-            a.klant.wijk.localeCompare(b.klant.wijk) ||
-            a.klant.naam.localeCompare(b.klant.naam)
-        );
         setRijen(r);
       })
       .catch(() => setLoadError(true));
   }, []);
+
+  // Route-volgorde: buurten in office-volgorde (zoals de schoonmaker ze op
+  // /vandaag rijdt), onbekende buurten achteraan, binnen een buurt op naam.
+  const buurtVolgorde = useMemo(
+    () => new Map(buurten.map((b) => [b.naam, b.volgorde])),
+    [buurten]
+  );
+  const gesorteerd = useMemo(() => {
+    const lijst = [...(rijen ?? [])];
+    lijst.sort((a, b) => {
+      const va = buurtVolgorde.get(a.klant.wijk) ?? Number.MAX_SAFE_INTEGER;
+      const vb = buurtVolgorde.get(b.klant.wijk) ?? Number.MAX_SAFE_INTEGER;
+      return (
+        va - vb ||
+        a.klant.wijk.localeCompare(b.klant.wijk) ||
+        a.klant.naam.localeCompare(b.klant.naam)
+      );
+    });
+    return lijst;
+  }, [rijen, buurtVolgorde]);
 
   // Filter-opties: actieve buurten + wijken van klanten buiten de lijst.
   const filterOpties = useMemo(() => {
@@ -75,9 +90,9 @@ export default function PlanningPage() {
   const gefilterd = useMemo(
     () =>
       buurtFilter
-        ? (rijen ?? []).filter((r) => r.klant.wijk === buurtFilter)
-        : (rijen ?? []),
-    [rijen, buurtFilter]
+        ? gesorteerd.filter((r) => r.klant.wijk === buurtFilter)
+        : gesorteerd,
+    [gesorteerd, buurtFilter]
   );
 
   const nietIngepland = useMemo(
@@ -222,7 +237,8 @@ export default function PlanningPage() {
                 100,
                 Math.round((somKlikos / capaciteit) * 100)
               );
-              // Groeperen per wijk (rijen zijn al op wijk + naam gesorteerd).
+              // Groeperen per wijk, in route-volgorde (gefilterd is al op
+              // buurt-volgorde + naam gesorteerd).
               const wijken = Array.from(new Set(vanDag.map((r) => r.klant.wijk)));
               return (
                 <section

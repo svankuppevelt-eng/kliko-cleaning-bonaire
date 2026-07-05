@@ -4,11 +4,12 @@
 // Grote tikbare knoppen, 1 kolom, hoog contrast (buiten in de zon).
 // Gedaan = telefooncamera open (input capture) -> upload naar Storage ->
 // reiniging-doc + abonnement.laatsteReiniging. Optimistic UI met nette fouten.
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SchoonmakerShell } from "@/components/schoonmaker-shell";
 import { useI18n } from "@/lib/i18n";
 import { isFirebaseConfigured, isStorageConfigured } from "@/lib/firebase";
 import { useHuidigeGebruiker } from "@/lib/use-office-user";
+import { useActieveBuurten } from "@/lib/use-buurten";
 import { listAbonnementenPerKlant, listKlanten } from "@/lib/data/klanten";
 import {
   listReinigingenOpDatum,
@@ -41,6 +42,31 @@ const SKIP_REDEN_TEKST: Record<SkipReden, string> = {
   anders: "Anders",
 };
 
+/**
+ * De Google Maps route-URL ondersteunt ongeveer 9 tussenpunten (waypoints).
+ * Met bestemming erbij dus max 10 stops per route-deel; bij meer stops
+ * splitsen we de route in delen.
+ */
+const MAX_STOPS_PER_ROUTE = 10;
+
+/** Adres URL-encoded met ", Bonaire" erachter, voor Google Maps. */
+function mapsAdres(stop: Stop): string {
+  return encodeURIComponent(`${stop.klant.adres}, Bonaire`);
+}
+
+/**
+ * Route-URL voor 1 deel: origin laten we bewust weg, dan gebruikt Google
+ * Maps de huidige locatie van de schoonmaker als startpunt. Destination =
+ * laatste stop, waypoints = de tussenliggende stops in route-volgorde.
+ */
+function mapsRouteUrl(deel: Stop[]): string {
+  const destination = mapsAdres(deel[deel.length - 1]);
+  const waypoints = deel.slice(0, -1).map(mapsAdres).join("|");
+  return `https://www.google.com/maps/dir/?api=1&destination=${destination}${
+    waypoints ? `&waypoints=${waypoints}` : ""
+  }`;
+}
+
 export default function VandaagPage() {
   return (
     <SchoonmakerShell>
@@ -52,6 +78,7 @@ export default function VandaagPage() {
 function StopsVanVandaag() {
   const { t } = useI18n();
   const gebruiker = useHuidigeGebruiker();
+  const { buurten } = useActieveBuurten();
 
   const [datum, setDatum] = useState<string | null>(null);
   const [stops, setStops] = useState<Stop[] | null>(null);
@@ -177,6 +204,38 @@ function StopsVanVandaag() {
     }
   }
 
+  // Route-volgorde: eerst op de office-volgorde van de buurt (uit
+  // /beheer/buurten), binnen een buurt op klantnaam. Stops met een buurt
+  // die niet (meer) in de lijst staat komen achteraan. Echte afstand-
+  // optimalisatie (kortste route) vereist later een Maps-API + geocoding;
+  // tot die tijd ordenen we pragmatisch op buurt-volgorde.
+  const buurtVolgorde = useMemo(
+    () => new Map(buurten.map((b) => [b.naam, b.volgorde])),
+    [buurten]
+  );
+  const route = useMemo(() => {
+    const lijst = [...(stops ?? [])];
+    lijst.sort((a, b) => {
+      const va = buurtVolgorde.get(a.klant.wijk) ?? Number.MAX_SAFE_INTEGER;
+      const vb = buurtVolgorde.get(b.klant.wijk) ?? Number.MAX_SAFE_INTEGER;
+      return (
+        va - vb ||
+        a.klant.wijk.localeCompare(b.klant.wijk) ||
+        a.klant.naam.localeCompare(b.klant.naam)
+      );
+    });
+    return lijst;
+  }, [stops, buurtVolgorde]);
+
+  // Alleen de nog niet afgehandelde stops horen in de navigatie-route.
+  const teRijden = route.filter(
+    (s) => s.fase !== "gedaan" && s.fase !== "overgeslagen"
+  );
+  const routeDelen: Stop[][] = [];
+  for (let i = 0; i < teRijden.length; i += MAX_STOPS_PER_ROUTE) {
+    routeDelen.push(teRijden.slice(i, i + MAX_STOPS_PER_ROUTE));
+  }
+
   const afgehandeld = (stops ?? []).filter(
     (s) => s.fase === "gedaan" || s.fase === "overgeslagen"
   ).length;
@@ -233,8 +292,48 @@ function StopsVanVandaag() {
           {t("vandaag.leeg")}
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {stops.map((stop) => {
+        <>
+          {/* Start route: hele rij nog-te-rijden stops in 1 Google Maps route.
+              Bij meer dan MAX_STOPS_PER_ROUTE stops gesplitst in delen. */}
+          {teRijden.length >= 2 && (
+            <div className="flex flex-col gap-2">
+              {routeDelen.length > 1 && (
+                <p className="text-xs font-semibold text-kliko-navy/60">
+                  {t("vandaag.route.gesplitst")}
+                </p>
+              )}
+              {routeDelen.map((deel, i) => (
+                <a
+                  key={i}
+                  href={mapsRouteUrl(deel)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-kliko-navy px-4 py-3.5 text-base font-bold text-white"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    aria-hidden="true"
+                  >
+                    <polygon points="6 4 18 12 6 20" />
+                  </svg>
+                  {routeDelen.length === 1
+                    ? t("vandaag.route.start")
+                    : `${t("vandaag.route.deel")} ${i + 1}`}
+                  <span className="text-sm font-semibold text-white/70">
+                    ({deel.length} {t("vandaag.route.stops")})
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
+
+          <ul className="flex flex-col gap-3">
+          {route.map((stop, idx) => {
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
               `${stop.klant.adres}, Bonaire`
             )}`;
@@ -247,17 +346,29 @@ function StopsVanVandaag() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-lg font-black leading-tight text-kliko-navy">
-                      {stop.klant.naam}
-                    </p>
-                    <p className="mt-0.5 text-sm font-semibold text-kliko-navy/70">
-                      {stop.klant.adres}
-                    </p>
-                    <p className="text-sm text-kliko-navy/55">
-                      {stop.klant.wijk} &middot; {stop.klant.aantalKlikos}{" "}
-                      {t("beheer.klikos")}
-                    </p>
+                  <div className="flex min-w-0 items-start gap-3">
+                    {/* Zichtbaar route-nummer (1, 2, 3, ...) in route-volgorde. */}
+                    <span
+                      className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-black tabular-nums ${
+                        klaar
+                          ? "bg-kliko-navy/10 text-kliko-navy/50"
+                          : "bg-kliko-blue text-white"
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-lg font-black leading-tight text-kliko-navy">
+                        {stop.klant.naam}
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold text-kliko-navy/70">
+                        {stop.klant.adres}
+                      </p>
+                      <p className="text-sm text-kliko-navy/55">
+                        {stop.klant.wijk} &middot; {stop.klant.aantalKlikos}{" "}
+                        {t("beheer.klikos")}
+                      </p>
+                    </div>
                   </div>
                   {stop.fase === "gedaan" && (
                     <span className="flex shrink-0 items-center gap-2">
@@ -429,7 +540,8 @@ function StopsVanVandaag() {
               </li>
             );
           })}
-        </ul>
+          </ul>
+        </>
       )}
     </div>
   );
