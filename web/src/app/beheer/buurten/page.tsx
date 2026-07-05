@@ -14,11 +14,20 @@ import {
   listBuurten,
   seedBuurtenAlsLeeg,
   updateBuurt,
+  verwijderDubbeleBuurten,
   type Buurt,
+  type SelibonDagdeel,
 } from "@/lib/data/buurten";
 
 const inputCls =
   "w-full rounded-xl border border-kliko-navy/20 bg-white px-4 py-2.5 text-base text-kliko-navy placeholder:text-kliko-navy/40 focus:border-kliko-blue focus:outline-none focus:ring-2 focus:ring-kliko-blue/30";
+
+const selectCls =
+  "min-w-0 flex-1 rounded-lg border border-kliko-navy/20 bg-white px-2 py-1.5 text-xs font-semibold text-kliko-navy focus:border-kliko-blue focus:outline-none";
+
+/** Selibon haalt ook op dagen op waarop wij zelf niet schoonmaken: ma t/m zo. */
+const SELIBON_DAGEN = [1, 2, 3, 4, 5, 6, 7] as const;
+const DAGDELEN: SelibonDagdeel[] = ["ochtend", "middag"];
 
 export default function BuurtenPage() {
   const { t } = useI18n();
@@ -36,6 +45,10 @@ export default function BuurtenPage() {
   // Hernoemen: 1 rij tegelijk.
   const [editId, setEditId] = useState<string | null>(null);
   const [editNaam, setEditNaam] = useState("");
+
+  // Dubbele buurten opruimen (oude dubbele seed).
+  const [dubbelBusy, setDubbelBusy] = useState(false);
+  const [dubbelMelding, setDubbelMelding] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isFirebaseConfigured()) return;
@@ -113,6 +126,51 @@ export default function BuurtenPage() {
     }
   }
 
+  async function verwijderDubbele() {
+    if (dubbelBusy) return;
+    if (!window.confirm(t("buurten.dubbel.confirm"))) return;
+    setSaveError(false);
+    setDubbelMelding(null);
+    setDubbelBusy(true);
+    try {
+      const n = await verwijderDubbeleBuurten();
+      // Lijst opnieuw laden: verwijderDubbeleBuurten kan ook Selibon-info
+      // naar de behouden buurt gemerged hebben.
+      setBuurten(await listBuurten());
+      setDubbelMelding(
+        n === 0
+          ? t("buurten.dubbel.geen")
+          : `${n} ${t("buurten.dubbel.klaar")}`
+      );
+    } catch {
+      setSaveError(true);
+    } finally {
+      setDubbelBusy(false);
+    }
+  }
+
+  async function wijzigSelibon(
+    buurt: Buurt,
+    wijziging: Partial<Pick<Buurt, "selibonDag" | "selibonDagdeel">>
+  ) {
+    setSaveError(false);
+    const zet = (velden: Partial<Buurt>) =>
+      setBuurten((huidig) =>
+        (huidig ?? []).map((b) => (b.id === buurt.id ? { ...b, ...velden } : b))
+      );
+    zet(wijziging);
+    try {
+      await updateBuurt(buurt.id, wijziging);
+    } catch {
+      // Rollback naar de waarden van voor de wijziging.
+      zet({
+        selibonDag: buurt.selibonDag ?? null,
+        selibonDagdeel: buurt.selibonDagdeel ?? null,
+      });
+      setSaveError(true);
+    }
+  }
+
   async function verplaats(index: number, richting: -1 | 1) {
     const oud = buurten ?? [];
     const doel = index + richting;
@@ -153,6 +211,23 @@ export default function BuurtenPage() {
           {t("buurten.add")}
         </button>
       </form>
+
+      {/* Opruimactie voor de oude dubbele seed */}
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={verwijderDubbele}
+          disabled={dubbelBusy}
+          className="rounded-full border-2 border-kliko-navy/20 px-4 py-2 text-xs font-bold text-kliko-navy hover:border-kliko-blue hover:text-kliko-blue disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {t("buurten.dubbel.btn")}
+        </button>
+        {dubbelMelding && (
+          <p role="status" className="text-sm font-semibold text-kliko-blue">
+            {dubbelMelding}
+          </p>
+        )}
+      </div>
 
       {saveError && (
         <p role="alert" className="mt-4 rounded-xl border border-kliko-red/30 bg-kliko-red/10 px-4 py-3 text-sm font-semibold text-kliko-red">
@@ -264,6 +339,51 @@ export default function BuurtenPage() {
                   <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
                 </svg>
               </button>
+
+              {/* Selibon-ophaaldag + dagdeel: hele breedte, tweede regel */}
+              <div className="flex w-full items-center gap-2">
+                <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-kliko-navy/50">
+                  {t("selibon.label")}
+                </span>
+                <select
+                  value={buurt.selibonDag ?? ""}
+                  onChange={(e) =>
+                    wijzigSelibon(buurt, {
+                      selibonDag:
+                        e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                  aria-label={t("buurten.selibon.dag")}
+                  className={selectCls}
+                >
+                  <option value="">{t("selibon.onbekend")}</option>
+                  {SELIBON_DAGEN.map((d) => (
+                    <option key={d} value={d}>
+                      {t(`dag.${d}`)}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={buurt.selibonDagdeel ?? ""}
+                  onChange={(e) =>
+                    wijzigSelibon(buurt, {
+                      selibonDagdeel:
+                        e.target.value === ""
+                          ? null
+                          : (e.target.value as SelibonDagdeel),
+                    })
+                  }
+                  aria-label={t("buurten.selibon.dagdeel")}
+                  className={selectCls}
+                >
+                  <option value="">{t("selibon.onbekend")}</option>
+                  {DAGDELEN.map((dd) => (
+                    <option key={dd} value={dd}>
+                      {t(`dagdeel.${dd}`)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </li>
           ))}
         </ul>
