@@ -63,6 +63,29 @@ export interface Abonnement {
 }
 
 /**
+ * Een fysieke kliko (container) van een klant (collectie `containers`).
+ * Elke container krijgt een uniek klikonummer + QR-label op de bak, zodat
+ * buurman-containers nooit verwisseld kunnen worden. De cleaner scant de QR
+ * bij het wassen; `laatsteReiniging` is daarmee de waarheid per container.
+ */
+export interface Container {
+  id: string;
+  /** Uniek label-nummer op de bak, format "KLB-00001" (teller-doc `tellers/containers`). */
+  klikonummer: string;
+  klantId: string;
+  /** Gedenormaliseerd zodat het label leesbaar blijft, ook als de klant wijzigt. */
+  klantNaam: string;
+  /** Volgnummer binnen de klant (kliko 1, 2, 3, ...). */
+  volgnummer: number;
+  /** False = label vervallen (bak weg/vervangen); scannen toont dan een melding. */
+  actief: boolean;
+  /** ISO-timestamp (new Date().toISOString()). */
+  aangemaaktOp: string;
+  /** ISO-datum (yyyy-mm-dd) van de laatst geregistreerde beurt van DEZE bak. */
+  laatsteReiniging?: string;
+}
+
+/**
  * Een uitgevoerde of overgeslagen schoonmaakbeurt (collectie `reinigingen`).
  * Klantgegevens worden gedenormaliseerd meegeschreven zodat de historie
  * leesbaar blijft, ook als de klant later wijzigt.
@@ -70,6 +93,11 @@ export interface Abonnement {
 export interface Reiniging {
   id: string;
   klantId: string;
+  /**
+   * Leeg ("") bij een container-scan: daar is het abonnement niet relevant,
+   * de beurt hangt aan de container zelf. Bestaat om backwards compatible
+   * te blijven met de stop-flow die per abonnement afvinkt.
+   */
   abonnementId: string;
   klantNaam: string;
   adres: string;
@@ -77,6 +105,10 @@ export interface Reiniging {
   /** ISO-datum (yyyy-mm-dd) waarop de beurt gepland/uitgevoerd is. */
   datum: string;
   status: ReinigingStatus;
+  /** Gescande container (alleen bij container-niveau registratie via QR). */
+  containerId?: string;
+  /** Gedenormaliseerd klikonummer ("KLB-00001") voor leesbare historie. */
+  klikonummer?: string;
   /** Download-URL van de bewijsfoto in Firebase Storage. */
   fotoUrl?: string;
   /** ISO-timestamp van het moment van afvinken. */

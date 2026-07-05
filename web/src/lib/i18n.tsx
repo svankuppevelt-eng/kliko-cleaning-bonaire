@@ -581,6 +581,49 @@ const pap: Dict = {
   "ovz.actie.facturen": "Genera faktura",
   "ovz.leeg":
     "No tin kliente ainda. Krea bo promé kliente i e bista ta yena su mes.",
+  // Kliko-labels + QR-scan. LET OP: Papiamentu laten nakijken door Roderick.
+  "kliko.labels.title": "Label di kliko",
+  "kliko.labels.uitleg":
+    "Kada kliko ta haña su mes number + kódigo QR riba e bak. E limpiadó ta scan e QR ora di laba; asina bo ta mira e último limpiesa pa kada kliko i nunka ta trocá bak.",
+  "kliko.labels.leeg": "No tin label pa e kliente aki ainda.",
+  "kliko.labels.genereer": "Genera label",
+  "kliko.labels.genereer.busy": "Ta traha label...",
+  "kliko.labels.print": "Print label",
+  "kliko.labels.err": "No por a karga òf warda e labelnan. Purba atrobe.",
+  "kliko.labels.laatste": "Último limpiesa",
+  "kliko.labels.nooit": "No tin limpiesa registrá ainda",
+  "kliko.labels.nr": "Kliko",
+  "kliko.labels.deactiveer": "Kita",
+  "kliko.labels.deactiveer.confirm":
+    "Kita e label aki? Despues no por scan e bak aki mas.",
+  "kliko.labels.inactief": "Kitá",
+  "kliko.print.terug": "Bèk na kliente",
+  "kliko.print.print": "Print",
+  "kliko.print.hint":
+    "Print e labelnan, kòrta nan i pega kada label bon visibel riba su mes kliko.",
+  "kliko.scan.btn": "Scan kliko",
+  "kliko.scan.title": "Mustra e kamera riba e kódigo QR",
+  "kliko.scan.stop": "Sera",
+  "kliko.scan.camera.err":
+    "Kamera no ta disponibel. Duna pèrmit pa e kamera òf scan e QR ku bo aplikashon di kamera normal.",
+  "kliko.scan.onbekend": "Kódigo deskonosí. Esaki no ta un label di kliko.",
+  "kliko.scan.zoeken": "Ta buska e kliko...",
+  "kliko.scan.geregistreerd": "Limpi i registrá",
+  "kliko.scan.al": "E kliko aki ta registrá kaba pa awe.",
+  "kliko.scan.opslaan.err": "No por a registrá. Purba atrobe.",
+  "kliko.scan.foto.toevoegen": "Agregá potrèt",
+  "kliko.scan.foto.busy": "Ta manda e potrèt...",
+  "kliko.scan.foto.klaar": "Potrèt wardá",
+  "kliko.scan.foto.err": "No por a manda e potrèt. E limpiesa sí ta registrá.",
+  "kliko.scan.teller": "{x} di {y} kliko scan",
+  "kliko.pagina.titel": "Kliko",
+  "kliko.pagina.klant": "Kliente",
+  "kliko.pagina.laatste": "Último limpiesa",
+  "kliko.pagina.markeer": "Marka komo limpi",
+  "kliko.pagina.login": "Log in pa marka e kliko aki komo limpi.",
+  "kliko.pagina.login.btn": "Log in",
+  "kliko.pagina.notfound": "No a haña e kliko. Kontrolá e label.",
+  "kliko.pagina.inactief": "E label aki a kaduká i no por wòrdu scan mas.",
 };
 
 const nl: Dict = {
@@ -1243,6 +1286,52 @@ const nl: Dict = {
   "ovz.actie.facturen": "Facturen genereren",
   "ovz.leeg":
     "Nog geen klanten. Maak je eerste klant aan en het overzicht vult zich vanzelf.",
+  // Kliko-labels + QR-scan.
+  "kliko.labels.title": "Kliko-labels",
+  "kliko.labels.uitleg":
+    "Elke kliko krijgt een eigen nummer + QR-code op de bak. De schoonmaker scant de QR bij het wassen; zo zie je per kliko de laatste beurt en worden bakken nooit verwisseld.",
+  "kliko.labels.leeg": "Nog geen labels voor deze klant.",
+  "kliko.labels.genereer": "Genereer labels",
+  "kliko.labels.genereer.busy": "Labels maken...",
+  "kliko.labels.print": "Print labels",
+  "kliko.labels.err":
+    "Het laden of opslaan van de labels is niet gelukt. Probeer het opnieuw.",
+  "kliko.labels.laatste": "Laatste beurt",
+  "kliko.labels.nooit": "Nog geen beurt geregistreerd",
+  "kliko.labels.nr": "Kliko",
+  "kliko.labels.deactiveer": "Vervallen",
+  "kliko.labels.deactiveer.confirm":
+    "Dit label vervallen verklaren? Scannen werkt daarna niet meer voor deze bak.",
+  "kliko.labels.inactief": "Vervallen",
+  "kliko.print.terug": "Terug naar klant",
+  "kliko.print.print": "Print",
+  "kliko.print.hint":
+    "Print de labels, knip ze uit en plak elk label zichtbaar op de eigen kliko.",
+  "kliko.scan.btn": "Scan kliko",
+  "kliko.scan.title": "Richt de camera op de QR-code",
+  "kliko.scan.stop": "Sluiten",
+  "kliko.scan.camera.err":
+    "Camera niet beschikbaar. Geef toestemming voor de camera of scan de QR met je gewone camera-app.",
+  "kliko.scan.onbekend": "Onbekende code. Dit is geen kliko-label.",
+  "kliko.scan.zoeken": "Kliko opzoeken...",
+  "kliko.scan.geregistreerd": "Schoon geregistreerd",
+  "kliko.scan.al": "Deze kliko is vandaag al geregistreerd.",
+  "kliko.scan.opslaan.err": "Registreren is niet gelukt. Probeer het opnieuw.",
+  "kliko.scan.foto.toevoegen": "Foto toevoegen",
+  "kliko.scan.foto.busy": "Foto uploaden...",
+  "kliko.scan.foto.klaar": "Foto opgeslagen",
+  "kliko.scan.foto.err":
+    "De foto uploaden is niet gelukt. De beurt is wel geregistreerd.",
+  "kliko.scan.teller": "{x} van {y} kliko's gescand",
+  "kliko.pagina.titel": "Kliko",
+  "kliko.pagina.klant": "Klant",
+  "kliko.pagina.laatste": "Laatste schoonmaakbeurt",
+  "kliko.pagina.markeer": "Markeer als schoon",
+  "kliko.pagina.login": "Log in om deze kliko als schoon te markeren.",
+  "kliko.pagina.login.btn": "Inloggen",
+  "kliko.pagina.notfound": "Kliko niet gevonden. Controleer het label.",
+  "kliko.pagina.inactief":
+    "Dit label is vervallen en kan niet meer gescand worden.",
 };
 
 const en: Dict = {
@@ -1800,6 +1889,51 @@ const en: Dict = {
   "ovz.actie.facturen": "Generate invoices",
   "ovz.leeg":
     "No customers yet. Create your first customer and the overview fills up automatically.",
+  // Kliko-labels + QR-scan.
+  "kliko.labels.title": "Bin labels",
+  "kliko.labels.uitleg":
+    "Every bin gets its own number + QR code on the container. The cleaner scans the QR when washing; you see the last cleaning per bin and bins never get mixed up.",
+  "kliko.labels.leeg": "No labels for this customer yet.",
+  "kliko.labels.genereer": "Generate labels",
+  "kliko.labels.genereer.busy": "Creating labels...",
+  "kliko.labels.print": "Print labels",
+  "kliko.labels.err": "Loading or saving the labels failed. Please try again.",
+  "kliko.labels.laatste": "Last cleaning",
+  "kliko.labels.nooit": "No cleaning recorded yet",
+  "kliko.labels.nr": "Bin",
+  "kliko.labels.deactiveer": "Retire",
+  "kliko.labels.deactiveer.confirm":
+    "Retire this label? Scanning will no longer work for this bin.",
+  "kliko.labels.inactief": "Retired",
+  "kliko.print.terug": "Back to customer",
+  "kliko.print.print": "Print",
+  "kliko.print.hint":
+    "Print the labels, cut them out and stick each label visibly on its own bin.",
+  "kliko.scan.btn": "Scan bin",
+  "kliko.scan.title": "Point the camera at the QR code",
+  "kliko.scan.stop": "Close",
+  "kliko.scan.camera.err":
+    "Camera not available. Allow camera access or scan the QR with your regular camera app.",
+  "kliko.scan.onbekend": "Unknown code. This is not a bin label.",
+  "kliko.scan.zoeken": "Looking up bin...",
+  "kliko.scan.geregistreerd": "Cleaned and recorded",
+  "kliko.scan.al": "This bin was already recorded today.",
+  "kliko.scan.opslaan.err": "Recording failed. Please try again.",
+  "kliko.scan.foto.toevoegen": "Add photo",
+  "kliko.scan.foto.busy": "Uploading photo...",
+  "kliko.scan.foto.klaar": "Photo saved",
+  "kliko.scan.foto.err":
+    "Uploading the photo failed. The cleaning was recorded.",
+  "kliko.scan.teller": "{x} of {y} bins scanned",
+  "kliko.pagina.titel": "Bin",
+  "kliko.pagina.klant": "Customer",
+  "kliko.pagina.laatste": "Last cleaning",
+  "kliko.pagina.markeer": "Mark as clean",
+  "kliko.pagina.login": "Log in to mark this bin as clean.",
+  "kliko.pagina.login.btn": "Log in",
+  "kliko.pagina.notfound": "Bin not found. Check the label.",
+  "kliko.pagina.inactief":
+    "This label has been retired and can no longer be scanned.",
 };
 
 const DICTS: Record<Lang, Dict> = { pap, nl, en };

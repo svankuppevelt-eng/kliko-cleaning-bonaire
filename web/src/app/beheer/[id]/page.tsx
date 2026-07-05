@@ -25,6 +25,7 @@ import { WERKDAGEN } from "@/lib/data/planning";
 import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
 import { BuurtVeld } from "@/components/buurt-veld";
+import { KlikoLabelsSectie } from "@/components/kliko-labels-sectie";
 import type {
   Abonnement,
   AbonnementStatus,
@@ -542,6 +543,9 @@ export default function KlantDetailPage() {
             )}
           </div>
 
+          {/* Kliko-labels: uniek klikonummer + QR per fysieke container. */}
+          <KlikoLabelsSectie klant={klant} />
+
           {/* Schoonmaak-historie: alle beurten (gedaan/overgeslagen) van deze klant. */}
           <div className="rounded-2xl border border-kliko-navy/10 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
@@ -588,6 +592,12 @@ export default function KlantDetailPage() {
                         <p className="text-sm font-bold text-kliko-navy">
                           {new Date(`${r.datum}T12:00:00`).toLocaleDateString(
                             lang === "en" ? "en-GB" : "nl-NL"
+                          )}
+                          {/* Container-scan: laat zien om welke bak het ging. */}
+                          {r.klikonummer && (
+                            <span className="ml-2 rounded bg-kliko-navy/5 px-1.5 py-0.5 font-mono text-xs font-bold text-kliko-navy/70">
+                              {r.klikonummer}
+                            </span>
                           )}
                         </p>
                         {r.uitgevoerdDoorNaam && (

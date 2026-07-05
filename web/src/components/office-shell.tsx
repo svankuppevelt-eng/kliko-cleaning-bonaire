@@ -146,7 +146,8 @@ export function OfficeShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-1 bg-kliko-navy/[0.03]">
       {/* Desktop-zijbalk */}
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-kliko-navy/10 bg-white lg:flex">
+      {/* print:hidden: bij printen (bv. kliko-labels) alleen de pagina-inhoud. */}
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-kliko-navy/10 bg-white print:hidden lg:flex">
         <div className="px-5 py-5">
           <Link href="/beheer/overzicht">
             <LogoPrimary height={38} priority />
@@ -174,7 +175,7 @@ export function OfficeShell({ children }: { children: ReactNode }) {
       {/* Rechterkolom */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobiele bovenbalk */}
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-kliko-navy/10 bg-white px-4 py-3 lg:hidden">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-kliko-navy/10 bg-white px-4 py-3 print:hidden lg:hidden">
           <button
             aria-label="Menu"
             onClick={() => setMenuOpen(true)}

@@ -35,19 +35,25 @@ export default function OffertesPage() {
 
   const [klantnaam, setKlantnaam] = useState("");
   const [contractduur, setContractduur] = useState<Contractduur>("maandelijks");
-  const [containers, setContainers] = useState<OfferteContainer[]>([
-    { type: "huishouden", frequentie: 4 },
+  // Per adres geldt EEN abonnement (frequentie): alle containers vallen onder
+  // dezelfde 1x/2x/4x per maand. Per container kies je alleen het type; de 2e
+  // container en verder nemen automatisch dit abonnement over.
+  const [frequentie, setFrequentie] = useState<Frequentie>(4);
+  const [containers, setContainers] = useState<{ type: KlantType }[]>([
+    { type: "huishouden" },
   ]);
 
-  const resultaat = berekenOfferte(containers, instellingen, contractduur);
+  const containersMetFreq: OfferteContainer[] = containers.map((c) => ({
+    type: c.type,
+    frequentie,
+  }));
+  const resultaat = berekenOfferte(containersMetFreq, instellingen, contractduur);
 
-  function wijzigContainer(idx: number, patch: Partial<OfferteContainer>) {
-    setContainers((huidig) =>
-      huidig.map((c, i) => (i === idx ? { ...c, ...patch } : c))
-    );
+  function wijzigType(idx: number, type: KlantType) {
+    setContainers((huidig) => huidig.map((c, i) => (i === idx ? { type } : c)));
   }
   function voegToe() {
-    setContainers((h) => [...h, { type: "huishouden", frequentie: 4 }]);
+    setContainers((h) => [...h, { type: "huishouden" }]);
   }
   function verwijder(idx: number) {
     setContainers((h) => (h.length > 1 ? h.filter((_, i) => i !== idx) : h));
@@ -98,7 +104,7 @@ export default function OffertesPage() {
 
       {/* Containers */}
       <section className="mt-4 rounded-2xl border border-kliko-navy/10 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
             {t("verkoop.off.containers")}
           </h2>
@@ -110,11 +116,30 @@ export default function OffertesPage() {
           </button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3">
+        {/* Abonnement per adres: geldt voor alle containers (de 2e en verder
+            nemen dit automatisch over). */}
+        <div className="mt-4 rounded-xl border border-kliko-navy/10 bg-kliko-blue/[0.04] p-3">
+          <label className="mb-1 block text-xs font-bold text-kliko-navy/60">
+            Abonnement voor dit adres (geldt voor alle containers)
+          </label>
+          <select
+            className={selectCls + " sm:max-w-xs"}
+            value={frequentie}
+            onChange={(e) => setFrequentie(Number(e.target.value) as Frequentie)}
+          >
+            {FREQUENTIES.map((f) => (
+              <option key={f} value={f}>
+                {FREQ_LABEL[f]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mt-3 flex flex-col gap-3">
           {resultaat.regels.map((r, idx) => (
             <div
               key={idx}
-              className="grid items-center gap-2 rounded-xl border border-kliko-navy/10 bg-kliko-navy/[0.02] p-3 sm:grid-cols-[auto_1fr_1fr_auto_auto]"
+              className="grid items-center gap-2 rounded-xl border border-kliko-navy/10 bg-kliko-navy/[0.02] p-3 sm:grid-cols-[auto_1fr_auto_auto]"
             >
               <span className="text-sm font-black text-kliko-navy/40">
                 #{r.nummer}
@@ -122,28 +147,11 @@ export default function OffertesPage() {
               <select
                 className={selectCls}
                 value={containers[idx].type}
-                onChange={(e) =>
-                  wijzigContainer(idx, { type: e.target.value as KlantType })
-                }
+                onChange={(e) => wijzigType(idx, e.target.value as KlantType)}
               >
                 {(["huishouden", "bedrijf"] as KlantType[]).map((tp) => (
                   <option key={tp} value={tp}>
                     {TYPE_LABEL[tp]}
-                  </option>
-                ))}
-              </select>
-              <select
-                className={selectCls}
-                value={containers[idx].frequentie}
-                onChange={(e) =>
-                  wijzigContainer(idx, {
-                    frequentie: Number(e.target.value) as Frequentie,
-                  })
-                }
-              >
-                {FREQUENTIES.map((f) => (
-                  <option key={f} value={f}>
-                    {FREQ_LABEL[f]}
                   </option>
                 ))}
               </select>

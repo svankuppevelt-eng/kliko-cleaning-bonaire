@@ -13,14 +13,19 @@ import { useActieveBuurten } from "@/lib/use-buurten";
 import { listAbonnementenPerKlant, listKlanten } from "@/lib/data/klanten";
 import {
   listReinigingenOpDatum,
+  markeerContainerGedaan,
   markeerGedaan,
   markeerOvergeslagen,
   uploadReinigingFoto,
+  voegFotoToeAanReiniging,
   type ReinigingInput,
 } from "@/lib/data/reinigingen";
+import { getContainer, parseContainerScan } from "@/lib/data/containers";
+import { getKlant } from "@/lib/data/klanten";
+import { KlikoScanner } from "@/components/kliko-scanner";
 import { isVandaagDue, isoDatum } from "@/lib/data/planning";
 import type { Buurt } from "@/lib/data/buurten";
-import type { Abonnement, Klant } from "@/lib/data/types";
+import type { Abonnement, Container, Klant, Reiniging } from "@/lib/data/types";
 
 type StopFase = "open" | "bezig" | "gedaan" | "overgeslagen" | "fout";
 
@@ -35,6 +40,19 @@ interface Stop {
 }
 
 type SkipReden = "nietbuiten" | "geblokkeerd" | "anders";
+
+/** Resultaat-paneel na een QR-scan van een kliko-label. */
+type ScanResultaat =
+  | { type: "zoeken" }
+  | { type: "fout"; berichtKey: string }
+  | { type: "al"; container: Container; klantNaam: string; tijd: string | null }
+  | {
+      type: "klaar";
+      container: Container;
+      klantNaam: string;
+      tijd: string;
+      reinigingId: string;
+    };
 
 // Vaste NL-teksten voor in het reiniging-doc (Firestore-data, niet UI).
 const SKIP_REDEN_TEKST: Record<SkipReden, string> = {
@@ -108,6 +126,18 @@ function StopsVanVandaag() {
   const [skipReden, setSkipReden] = useState<SkipReden>("nietbuiten");
   const [skipTekst, setSkipTekst] = useState("");
 
+  // QR-scan van kliko-labels: registratie per fysieke container.
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scan, setScan] = useState<ScanResultaat | null>(null);
+  const [scanFoto, setScanFoto] = useState<"geen" | "bezig" | "klaar" | "fout">(
+    "geen"
+  );
+  // Vandaag geregistreerde container-beurten (uit Firestore + eigen scans),
+  // voor de "x van y kliko's gescand" teller per stop en dubbel-scan detectie.
+  const [containerReinigingen, setContainerReinigingen] = useState<Reiniging[]>(
+    []
+  );
+
   const storageActief = isStorageConfigured();
 
   useEffect(() => {
@@ -125,8 +155,13 @@ function StopsVanVandaag() {
       listReinigingenOpDatum(vandaagIso),
     ])
       .then(([klanten, abosPerKlant, reinigingen]) => {
+        // Container-scans (abonnementId leeg) horen niet in de stop-afvinking;
+        // die voeden de "x van y kliko's gescand" teller per stop.
+        setContainerReinigingen(reinigingen.filter((r) => r.containerId));
         const reinigingPerAbo = new Map(
-          reinigingen.map((r) => [r.abonnementId, r])
+          reinigingen
+            .filter((r) => !r.containerId)
+            .map((r) => [r.abonnementId, r])
         );
         const lijst: Stop[] = [];
         for (const klant of klanten) {
@@ -223,6 +258,133 @@ function StopsVanVandaag() {
     }
   }
 
+  /**
+   * QR gescand: containerId uit de code halen, container + klant opzoeken en
+   * direct een container-beurt registreren. De foto is daarna optioneel
+   * (zelfde Storage-upload als de stop-flow). Al vandaag gescand = melding,
+   * geen dubbel doc.
+   */
+  async function verwerkScan(tekst: string) {
+    setScannerOpen(false);
+    setScanFoto("geen");
+    const containerId = parseContainerScan(tekst);
+    if (!containerId) {
+      setScan({ type: "fout", berichtKey: "kliko.scan.onbekend" });
+      return;
+    }
+    setScan({ type: "zoeken" });
+    try {
+      const container = await getContainer(containerId);
+      if (!container) {
+        setScan({ type: "fout", berichtKey: "kliko.scan.onbekend" });
+        return;
+      }
+      if (!container.actief) {
+        setScan({ type: "fout", berichtKey: "kliko.pagina.inactief" });
+        return;
+      }
+      const alGedaan = containerReinigingen.find(
+        (r) => r.containerId === container.id
+      );
+      if (alGedaan) {
+        setScan({
+          type: "al",
+          container,
+          klantNaam: alGedaan.klantNaam || container.klantNaam,
+          tijd: alGedaan.uitgevoerdOp
+            ? new Date(alGedaan.uitgevoerdOp).toLocaleTimeString("nl-NL", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : null,
+        });
+        return;
+      }
+      // Klant-doc kan weg zijn; dan de gedenormaliseerde naam op de container.
+      let klant: Klant | null = null;
+      try {
+        klant = await getKlant(container.klantId);
+      } catch {
+        klant = null;
+      }
+      const vandaagIso = datum ?? isoDatum(new Date());
+      const reinigingId = await markeerContainerGedaan({
+        container,
+        klant: klant
+          ? { naam: klant.naam, adres: klant.adres, wijk: klant.wijk }
+          : null,
+        datum: vandaagIso,
+        uitgevoerdDoorUid:
+          gebruiker.status === "ingelogd" ? gebruiker.user.uid : "",
+        uitgevoerdDoorNaam:
+          gebruiker.status === "ingelogd"
+            ? gebruiker.naam || gebruiker.email
+            : "",
+      });
+      const klantNaam = klant?.naam ?? container.klantNaam;
+      setContainerReinigingen((huidig) => [
+        ...huidig,
+        {
+          id: reinigingId,
+          klantId: container.klantId,
+          abonnementId: "",
+          klantNaam,
+          adres: klant?.adres ?? "",
+          wijk: klant?.wijk ?? "",
+          datum: vandaagIso,
+          status: "gedaan",
+          containerId: container.id,
+          klikonummer: container.klikonummer,
+          uitgevoerdOp: new Date().toISOString(),
+          uitgevoerdDoorUid: "",
+          uitgevoerdDoorNaam: "",
+        },
+      ]);
+      setScan({
+        type: "klaar",
+        container,
+        klantNaam,
+        tijd: new Date().toLocaleTimeString("nl-NL", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        reinigingId,
+      });
+    } catch {
+      setScan({ type: "fout", berichtKey: "kliko.scan.opslaan.err" });
+    }
+  }
+
+  /** Optionele bewijsfoto bij een zojuist gescande container-beurt. */
+  async function scanFotoErbij(file: File) {
+    if (scan?.type !== "klaar") return;
+    setScanFoto("bezig");
+    try {
+      const fotoUrl = await uploadReinigingFoto(
+        datum ?? isoDatum(new Date()),
+        scan.container.id,
+        file
+      );
+      await voegFotoToeAanReiniging(scan.reinigingId, fotoUrl);
+      setScanFoto("klaar");
+    } catch {
+      setScanFoto("fout");
+    }
+  }
+
+  // Aantal vandaag gescande containers per klant (distinct containerIds),
+  // voor de "x van y kliko's gescand" regel op de stop-kaart.
+  const gescandPerKlant = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const r of containerReinigingen) {
+      if (!r.containerId) continue;
+      const set = map.get(r.klantId) ?? new Set<string>();
+      set.add(r.containerId);
+      map.set(r.klantId, set);
+    }
+    return map;
+  }, [containerReinigingen]);
+
   // Route-volgorde: eerst op de office-volgorde van de buurt (uit
   // /beheer/buurten), binnen een buurt op klantnaam. Stops met een buurt
   // die niet (meer) in de lijst staat komen achteraan. Echte afstand-
@@ -303,6 +465,105 @@ function StopsVanVandaag() {
         </div>
       )}
 
+      {/* Scan kliko: QR-label op de bak scannen en de beurt per container
+          registreren. Werkt ook voor bakken buiten de stops van vandaag. */}
+      {isFirebaseConfigured() && (
+        <div className="flex flex-col gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              setScan(null);
+              setScanFoto("geen");
+              setScannerOpen(true);
+            }}
+            className="flex items-center justify-center gap-2 rounded-xl border-2 border-kliko-navy bg-white px-4 py-3.5 text-base font-bold text-kliko-navy"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path d="M3 8V5a2 2 0 0 1 2-2h3" />
+              <path d="M16 3h3a2 2 0 0 1 2 2v3" />
+              <path d="M21 16v3a2 2 0 0 1-2 2h-3" />
+              <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+            </svg>
+            {t("kliko.scan.btn")}
+          </button>
+
+          {scan?.type === "zoeken" && (
+            <p className="rounded-xl bg-kliko-navy/5 px-4 py-3 text-sm font-bold text-kliko-navy/70">
+              {t("kliko.scan.zoeken")}
+            </p>
+          )}
+          {scan?.type === "fout" && (
+            <p className="rounded-xl border border-kliko-red/30 bg-kliko-red/10 px-4 py-3 text-sm font-semibold text-kliko-red">
+              {t(scan.berichtKey)}
+            </p>
+          )}
+          {scan?.type === "al" && (
+            <div className="rounded-xl border border-kliko-yellow bg-kliko-yellow/15 px-4 py-3">
+              <p className="text-sm font-bold text-kliko-navy">
+                {t("kliko.scan.al")}
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-kliko-navy/70">
+                {scan.klantNaam} &middot; {scan.container.klikonummer}
+                {scan.tijd ? <> &middot; {scan.tijd}</> : null}
+              </p>
+            </div>
+          )}
+          {scan?.type === "klaar" && (
+            <div className="rounded-xl border border-kliko-blue/30 bg-kliko-blue/5 px-4 py-3">
+              <p className="text-base font-black text-kliko-blue">
+                {t("kliko.scan.geregistreerd")}
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-kliko-navy">
+                {scan.klantNaam} &middot; {scan.container.klikonummer} &middot;{" "}
+                {scan.tijd}
+              </p>
+              {storageActief && scanFoto !== "klaar" && (
+                <label
+                  className={`mt-2.5 flex cursor-pointer items-center justify-center rounded-xl bg-kliko-blue px-4 py-3 text-sm font-bold text-white ${
+                    scanFoto === "bezig" ? "opacity-60" : ""
+                  }`}
+                >
+                  {scanFoto === "bezig"
+                    ? t("kliko.scan.foto.busy")
+                    : t("kliko.scan.foto.toevoegen")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    disabled={scanFoto === "bezig"}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) scanFotoErbij(file);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+              {scanFoto === "klaar" && (
+                <p className="mt-2 text-sm font-bold text-kliko-blue">
+                  {t("kliko.scan.foto.klaar")}
+                </p>
+              )}
+              {scanFoto === "fout" && (
+                <p className="mt-2 text-sm font-bold text-kliko-red">
+                  {t("kliko.scan.foto.err")}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {loadError ? (
         <p className="rounded-xl border border-kliko-red/30 bg-kliko-red/10 px-4 py-3 text-sm font-semibold text-kliko-red">
           {t("vandaag.err.load")}
@@ -369,6 +630,9 @@ function StopsVanVandaag() {
             const selibon = eersteVanWijk
               ? selibonTekst(buurtPerNaam.get(stop.klant.wijk), t)
               : null;
+            // Vandaag per QR gescande containers van deze klant (kan meer
+            // zijn dan aantalKlikos als er losse labels bij zijn gekomen).
+            const gescand = gescandPerKlant.get(stop.klant.id)?.size ?? 0;
             return (
               <li
                 key={stop.abo.id}
@@ -402,6 +666,13 @@ function StopsVanVandaag() {
                       {selibon && (
                         <p className="mt-0.5 text-xs font-semibold text-kliko-navy/45">
                           {selibon}
+                        </p>
+                      )}
+                      {gescand > 0 && (
+                        <p className="mt-1 inline-block rounded-full bg-kliko-blue/10 px-2.5 py-0.5 text-xs font-bold text-kliko-blue">
+                          {t("kliko.scan.teller")
+                            .replace("{x}", String(gescand))
+                            .replace("{y}", String(stop.klant.aantalKlikos))}
                         </p>
                       )}
                     </div>
@@ -578,6 +849,14 @@ function StopsVanVandaag() {
           })}
           </ul>
         </>
+      )}
+
+      {/* Fullscreen camera-overlay voor het scannen van een kliko-label. */}
+      {scannerOpen && (
+        <KlikoScanner
+          onGescand={verwerkScan}
+          onSluit={() => setScannerOpen(false)}
+        />
       )}
     </div>
   );

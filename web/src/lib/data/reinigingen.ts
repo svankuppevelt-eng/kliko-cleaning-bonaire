@@ -12,10 +12,11 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getDb, getFirebaseStorage } from "@/lib/firebase";
-import type { Reiniging } from "./types";
+import type { Container, Reiniging } from "./types";
 
 const REINIGINGEN = "reinigingen";
 const ABONNEMENTEN = "abonnementen";
+const CONTAINERS = "containers";
 
 /** Gedeelde invoer voor gedaan/overgeslagen (klantdata gedenormaliseerd). */
 export interface ReinigingInput {
@@ -52,6 +53,66 @@ export async function markeerGedaan(
     laatsteReiniging: input.datum,
   });
   return reinigingRef.id;
+}
+
+/** Invoer voor een container-niveau registratie (QR-scan op de bak). */
+export interface ContainerGedaanInput {
+  container: Container;
+  /**
+   * Klantgegevens voor de gedenormaliseerde velden. Null als het klant-doc
+   * niet (meer) bestaat; dan vallen we terug op wat op de container staat.
+   */
+  klant: { naam: string; adres: string; wijk: string } | null;
+  /** ISO-datum yyyy-mm-dd van de beurt (meestal vandaag). */
+  datum: string;
+  fotoUrl?: string;
+  notitie?: string;
+  uitgevoerdDoorUid: string;
+  uitgevoerdDoorNaam: string;
+}
+
+/**
+ * Container-niveau beurt registreren (na QR-scan): schrijft een reiniging-doc
+ * MET containerId + klikonummer en werkt `container.laatsteReiniging` bij.
+ * Het abonnement-niveau (`abonnement.laatsteReiniging`) blijft bewust
+ * ongemoeid: per container is de nieuwe waarheid, de stop-flow blijft de
+ * bestaande terugval. `abonnementId` is hier leeg (zie types.ts).
+ */
+export async function markeerContainerGedaan(
+  input: ContainerGedaanInput
+): Promise<string> {
+  const { container, klant, datum, fotoUrl, notitie, ...uitvoerder } = input;
+  const data: Omit<Reiniging, "id"> = {
+    klantId: container.klantId,
+    abonnementId: "",
+    klantNaam: klant?.naam ?? container.klantNaam,
+    adres: klant?.adres ?? "",
+    wijk: klant?.wijk ?? "",
+    datum,
+    status: "gedaan",
+    containerId: container.id,
+    klikonummer: container.klikonummer,
+    uitgevoerdOp: new Date().toISOString(),
+    ...uitvoerder,
+    ...(fotoUrl ? { fotoUrl } : {}),
+    ...(notitie ? { notitie } : {}),
+  };
+  const reinigingRef = await addDoc(collection(getDb(), REINIGINGEN), data);
+  await updateDoc(doc(getDb(), CONTAINERS, container.id), {
+    laatsteReiniging: datum,
+  });
+  return reinigingRef.id;
+}
+
+/**
+ * Bewijsfoto achteraf aan een bestaande reiniging hangen (scan-flow:
+ * eerst registreren, dan optioneel een foto erbij).
+ */
+export async function voegFotoToeAanReiniging(
+  reinigingId: string,
+  fotoUrl: string
+): Promise<void> {
+  await updateDoc(doc(getDb(), REINIGINGEN, reinigingId), { fotoUrl });
 }
 
 /**
