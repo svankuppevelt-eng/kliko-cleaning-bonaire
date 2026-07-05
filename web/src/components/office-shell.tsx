@@ -70,6 +70,7 @@ export function OfficeShell({ children }: { children: ReactNode }) {
     {
       label: t("navgroep.operatie"),
       items: [
+        { href: "/beheer/overzicht", label: t("shell.overzicht") },
         { href: "/beheer", label: t("shell.klanten") },
         { href: "/beheer/planning", label: t("shell.planning") },
         { href: "/vandaag", label: t("shell.vandaag") },
@@ -147,7 +148,7 @@ export function OfficeShell({ children }: { children: ReactNode }) {
       {/* Desktop-zijbalk */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-kliko-navy/10 bg-white lg:flex">
         <div className="px-5 py-5">
-          <Link href="/beheer">
+          <Link href="/beheer/overzicht">
             <LogoPrimary height={38} priority />
           </Link>
         </div>
@@ -185,7 +186,7 @@ export function OfficeShell({ children }: { children: ReactNode }) {
               <line x1="4" y1="17" x2="20" y2="17" />
             </svg>
           </button>
-          <Link href="/beheer">
+          <Link href="/beheer/overzicht">
             <LogoPrimary height={34} />
           </Link>
           <LanguageSwitcher />
