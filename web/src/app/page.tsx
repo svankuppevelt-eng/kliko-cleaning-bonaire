@@ -2,11 +2,13 @@
 
 import { LogoPrimary, LogoMark } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { useI18n } from "@/lib/i18n";
+import { useLandingText } from "@/lib/use-landing-text";
 import { useInstellingen } from "@/lib/use-instellingen";
 
 export default function Home() {
-  const { t } = useI18n();
+  // tt = tekst met office-override uit siteContent/landing (bewerkbaar via
+  // /beheer/website), t = de vaste i18n-tekst. tt valt zelf terug op t.
+  const { tt, t } = useLandingText();
   // Prijzen uit de office-instellingen (instellingen/algemeen), met de
   // constanten als fallback zolang het doc er niet is of Firestore stil is.
   const { instellingen } = useInstellingen();
@@ -37,9 +39,9 @@ export default function Home() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <LogoPrimary height={50} priority />
           <nav className="hidden items-center gap-7 text-sm font-semibold text-kliko-navy md:flex">
-            <a href="#how" className="hover:text-kliko-blue">{t("nav.how")}</a>
-            <a href="#prices" className="hover:text-kliko-blue">{t("nav.prices")}</a>
-            <a href="#contact" className="hover:text-kliko-blue">{t("nav.contact")}</a>
+            <a href="#how" className="hover:text-kliko-blue">{tt("nav.how")}</a>
+            <a href="#prices" className="hover:text-kliko-blue">{tt("nav.prices")}</a>
+            <a href="#contact" className="hover:text-kliko-blue">{tt("nav.contact")}</a>
           </nav>
           <div className="flex items-center gap-2.5">
             <LanguageSwitcher />
@@ -47,7 +49,7 @@ export default function Home() {
               href="/aanmelden"
               className="rounded-full bg-kliko-yellow px-4 py-2 text-sm font-bold text-black transition-transform hover:scale-[1.03]"
             >
-              {t("nav.signup")}
+              {tt("nav.signup")}
             </a>
           </div>
         </div>
@@ -68,23 +70,23 @@ export default function Home() {
               Bonaire
             </span>
             <h1 className="mt-5 text-4xl font-black leading-[1.05] tracking-tight text-kliko-navy text-balance sm:text-5xl md:text-6xl">
-              {t("hero.title")}
+              {tt("hero.title")}
             </h1>
             <p className="mt-5 max-w-md text-lg leading-relaxed text-kliko-navy/70">
-              {t("hero.sub")}
+              {tt("hero.sub")}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
                 href="/aanmelden"
                 className="inline-flex items-center justify-center rounded-full bg-kliko-yellow px-6 py-3.5 text-base font-bold text-black shadow-sm transition-transform hover:scale-[1.03]"
               >
-                {t("hero.cta1")}
+                {tt("hero.cta1")}
               </a>
               <a
                 href="#contact"
                 className="inline-flex items-center justify-center rounded-full bg-kliko-blue px-6 py-3.5 text-base font-bold text-white transition-transform hover:scale-[1.03]"
               >
-                {t("hero.cta2")}
+                {tt("hero.cta2")}
               </a>
             </div>
           </div>
@@ -102,7 +104,7 @@ export default function Home() {
             {["trust.1", "trust.2", "trust.3"].map((k) => (
               <span key={k} className="flex items-center gap-2">
                 <CheckDot />
-                {t(k)}
+                {tt(k)}
               </span>
             ))}
           </div>
@@ -112,7 +114,7 @@ export default function Home() {
       {/* How it works */}
       <section id="how" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-24">
         <h2 className="text-center text-3xl font-black tracking-tight text-kliko-navy text-balance sm:text-4xl">
-          {t("how.title")}
+          {tt("how.title")}
         </h2>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {[
@@ -127,8 +129,8 @@ export default function Home() {
               <span className="grid h-11 w-11 place-items-center rounded-full bg-kliko-blue text-lg font-black text-white">
                 {s.n}
               </span>
-              <h3 className="mt-4 text-lg font-bold text-kliko-navy">{t(s.t)}</h3>
-              <p className="mt-1.5 text-kliko-navy/70">{t(s.d)}</p>
+              <h3 className="mt-4 text-lg font-bold text-kliko-navy">{tt(s.t)}</h3>
+              <p className="mt-1.5 text-kliko-navy/70">{tt(s.d)}</p>
             </div>
           ))}
         </div>
@@ -138,10 +140,10 @@ export default function Home() {
       <section id="prices" className="bg-kliko-navy/[0.03] py-16 md:py-24">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
           <h2 className="text-center text-3xl font-black tracking-tight text-kliko-navy text-balance sm:text-4xl">
-            {t("price.title")}
+            {tt("price.title")}
           </h2>
           <p className="mx-auto mt-3 max-w-md text-center text-kliko-navy/70">
-            {t("price.sub")}
+            {tt("price.sub")}
           </p>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {plans.map((plan) => (
@@ -174,7 +176,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <p className="mt-6 text-center text-sm text-kliko-navy/50">{t("price.note")}</p>
+          <p className="mt-6 text-center text-sm text-kliko-navy/50">{tt("price.note")}</p>
         </div>
       </section>
 
@@ -182,14 +184,14 @@ export default function Home() {
       <section id="signup" className="bg-kliko-navy py-16 md:py-24">
         <div className="mx-auto w-full max-w-3xl px-4 text-center sm:px-6">
           <h2 className="text-3xl font-black tracking-tight text-white text-balance sm:text-4xl">
-            {t("cta.title")}
+            {tt("cta.title")}
           </h2>
-          <p className="mx-auto mt-4 max-w-lg text-lg text-white/75">{t("cta.sub")}</p>
+          <p className="mx-auto mt-4 max-w-lg text-lg text-white/75">{tt("cta.sub")}</p>
           <a
             href="/aanmelden"
             className="mt-8 inline-flex items-center justify-center rounded-full bg-kliko-yellow px-8 py-4 text-lg font-bold text-black transition-transform hover:scale-[1.03]"
           >
-            {t("cta.btn")}
+            {tt("cta.btn")}
           </a>
         </div>
       </section>
@@ -198,7 +200,7 @@ export default function Home() {
       <footer id="contact" className="bg-white">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 text-sm text-kliko-navy/60 sm:flex-row sm:px-6">
           <LogoPrimary height={42} />
-          <span>{t("foot.tagline")}</span>
+          <span>{tt("foot.tagline")}</span>
         </div>
       </footer>
     </div>

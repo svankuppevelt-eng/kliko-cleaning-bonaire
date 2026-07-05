@@ -90,6 +90,7 @@ export function OfficeShell({ children }: { children: ReactNode }) {
       label: t("navgroep.beheer"),
       items: [
         { href: "/beheer/buurten", label: t("shell.buurten") },
+        { href: "/beheer/website", label: t("shell.website") },
         { href: "/beheer/instellingen", label: t("shell.instellingen") },
         ...(user.rol === "eigenaar"
           ? [{ href: "/beheer/team", label: t("shell.team") }]

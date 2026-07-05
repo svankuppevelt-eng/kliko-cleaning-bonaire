@@ -390,6 +390,45 @@ const pap: Dict = {
   "kost.cat.personeel": "Personal",
   "kost.cat.brandstof": "Kombustibel",
   "kost.cat.overig": "Otro",
+  // Website-teksten editor (office). LET OP: Papiamentu laten nakijken door Roderick.
+  "shell.website": "Wèpsait",
+  "site.title": "Tekstonan di wèpsait",
+  "site.sub":
+    "Adaptá e tekstonan di e página prinsipal públiko. Kambionan ta konta mesora pa bishitantenan.",
+  "site.uitleg":
+    "Laga un veld bashí = usa e teksto estándar. E teksto shinishi den kada veld ta e estándar.",
+  "site.loading": "Ta karga tekstonan...",
+  "site.save": "Warda",
+  "site.saved": "Tekstonan wardá.",
+  "site.err.save": "No por a warda. Purba atrobe.",
+  "site.bekijk": "Wak e wèpsait",
+  "site.sec.hero": "Hero (parti ariba)",
+  "site.sec.trust": "Bara di konfiansa",
+  "site.sec.how": "Kon e ta funshoná",
+  "site.sec.price": "Tarifa",
+  "site.sec.cta": "Blòki di akshon (parti abou)",
+  "site.sec.footer": "Pia di página",
+  "site.sec.nav": "Navegashon (menu)",
+  "site.f.titel": "Título",
+  "site.f.ondertitel": "Suptítulo",
+  "site.f.knop1": "Boton 1",
+  "site.f.knop2": "Boton 2",
+  "site.f.knop": "Teksto di boton",
+  "site.f.punt1": "Punto 1",
+  "site.f.punt2": "Punto 2",
+  "site.f.punt3": "Punto 3",
+  "site.f.stap1titel": "Paso 1: título",
+  "site.f.stap1tekst": "Paso 1: teksto",
+  "site.f.stap2titel": "Paso 2: título",
+  "site.f.stap2tekst": "Paso 2: teksto",
+  "site.f.stap3titel": "Paso 3: título",
+  "site.f.stap3tekst": "Paso 3: teksto",
+  "site.f.voetnoot": "Nota abou",
+  "site.f.tagline": "Tagline",
+  "site.f.menu1": "Link di menu 1",
+  "site.f.menu2": "Link di menu 2",
+  "site.f.menu3": "Link di menu 3",
+  "site.f.menuknop": "Boton di registrá",
 };
 
 const nl: Dict = {
@@ -888,6 +927,45 @@ const nl: Dict = {
   "kost.cat.personeel": "Personeel",
   "kost.cat.brandstof": "Brandstof",
   "kost.cat.overig": "Overig",
+  // Website-teksten editor (office).
+  "shell.website": "Website",
+  "site.title": "Website-teksten",
+  "site.sub":
+    "Pas de teksten van de publieke landingspagina aan. Wijzigingen gelden direct voor bezoekers.",
+  "site.uitleg":
+    "Een veld leeg laten = de standaardtekst gebruiken. De grijze tekst in elk veld is die standaard.",
+  "site.loading": "Teksten laden...",
+  "site.save": "Opslaan",
+  "site.saved": "Teksten opgeslagen.",
+  "site.err.save": "Opslaan is niet gelukt. Probeer het opnieuw.",
+  "site.bekijk": "Bekijk de website",
+  "site.sec.hero": "Hero (bovenaan)",
+  "site.sec.trust": "Trust-balk",
+  "site.sec.how": "Zo werkt het",
+  "site.sec.price": "Tarieven",
+  "site.sec.cta": "Actieblok (onderaan)",
+  "site.sec.footer": "Footer",
+  "site.sec.nav": "Navigatie (menu)",
+  "site.f.titel": "Titel",
+  "site.f.ondertitel": "Ondertitel",
+  "site.f.knop1": "Knop 1",
+  "site.f.knop2": "Knop 2",
+  "site.f.knop": "Knoptekst",
+  "site.f.punt1": "Punt 1",
+  "site.f.punt2": "Punt 2",
+  "site.f.punt3": "Punt 3",
+  "site.f.stap1titel": "Stap 1: titel",
+  "site.f.stap1tekst": "Stap 1: tekst",
+  "site.f.stap2titel": "Stap 2: titel",
+  "site.f.stap2tekst": "Stap 2: tekst",
+  "site.f.stap3titel": "Stap 3: titel",
+  "site.f.stap3tekst": "Stap 3: tekst",
+  "site.f.voetnoot": "Voetnoot",
+  "site.f.tagline": "Tagline",
+  "site.f.menu1": "Menulink 1",
+  "site.f.menu2": "Menulink 2",
+  "site.f.menu3": "Menulink 3",
+  "site.f.menuknop": "Aanmeld-knop",
 };
 
 const en: Dict = {
@@ -1258,9 +1336,56 @@ const en: Dict = {
   "kost.cat.personeel": "Staff",
   "kost.cat.brandstof": "Fuel",
   "kost.cat.overig": "Other",
+  // Website texts editor (office).
+  "shell.website": "Website",
+  "site.title": "Website texts",
+  "site.sub":
+    "Edit the texts of the public landing page. Changes apply immediately for visitors.",
+  "site.uitleg":
+    "Leave a field empty = use the default text. The grey text in each field is that default.",
+  "site.loading": "Loading texts...",
+  "site.save": "Save",
+  "site.saved": "Texts saved.",
+  "site.err.save": "Saving failed. Please try again.",
+  "site.bekijk": "View the website",
+  "site.sec.hero": "Hero (top)",
+  "site.sec.trust": "Trust bar",
+  "site.sec.how": "How it works",
+  "site.sec.price": "Pricing",
+  "site.sec.cta": "Call to action (bottom)",
+  "site.sec.footer": "Footer",
+  "site.sec.nav": "Navigation (menu)",
+  "site.f.titel": "Title",
+  "site.f.ondertitel": "Subtitle",
+  "site.f.knop1": "Button 1",
+  "site.f.knop2": "Button 2",
+  "site.f.knop": "Button text",
+  "site.f.punt1": "Point 1",
+  "site.f.punt2": "Point 2",
+  "site.f.punt3": "Point 3",
+  "site.f.stap1titel": "Step 1: title",
+  "site.f.stap1tekst": "Step 1: text",
+  "site.f.stap2titel": "Step 2: title",
+  "site.f.stap2tekst": "Step 2: text",
+  "site.f.stap3titel": "Step 3: title",
+  "site.f.stap3tekst": "Step 3: text",
+  "site.f.voetnoot": "Footnote",
+  "site.f.tagline": "Tagline",
+  "site.f.menu1": "Menu link 1",
+  "site.f.menu2": "Menu link 2",
+  "site.f.menu3": "Menu link 3",
+  "site.f.menuknop": "Sign-up button",
 };
 
 const DICTS: Record<Lang, Dict> = { pap, nl, en };
+
+/**
+ * De i18n-standaardtekst voor een key in een specifieke taal, los van de
+ * actieve taal. Gebruikt door /beheer/website als placeholder/vangnet-hint.
+ */
+export function standaardTekst(lang: Lang, key: string): string {
+  return DICTS[lang][key] ?? DICTS.nl[key] ?? "";
+}
 
 type I18n = {
   lang: Lang;
