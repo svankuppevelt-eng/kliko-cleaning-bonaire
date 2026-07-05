@@ -20,7 +20,7 @@ import {
   FREQUENTIES,
   formatUsd,
   kortingPctVoorAantal,
-  prijsMetKorting,
+  totaalMaandPrijs,
 } from "@/lib/data/prijzen";
 import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
@@ -62,18 +62,21 @@ export default function AanmeldenPage() {
   const [error, setError] = useState<string | null>(null);
 
   const configured = useMemo(() => isFirebaseConfigured(), []);
-  // Maandprijs voor de gekozen tier; bij meerdere kliko's geldt de instelbare
-  // container-korting uit de office-instellingen. Jaarbetaling (12 maanden in
-  // 1 keer) is hier bewust nog geen betaalwijze; dat is een logische latere
-  // uitbreiding van de aanmeldflow.
+  // Alle kliko's van de klant komen op 1 abonnement (1 type + 1 frequentie);
+  // de prijs is het TOTAAL voor alle kliko's samen: aantal x maandprijs per
+  // kliko, min de instelbare container-korting uit de office-instellingen.
+  // Jaarbetaling (12 maanden in 1 keer) is hier bewust nog geen betaalwijze;
+  // dat is een logische latere uitbreiding van de aanmeldflow.
+  const aantal = Math.max(1, aantalKlikos);
   const basisPrijs = instellingen.prijzen[type][frequentie].maand;
-  const kortingPct = kortingPctVoorAantal(
-    instellingen.containerKorting,
-    Math.max(1, aantalKlikos)
-  );
-  const prijs = prijsMetKorting(
-    basisPrijs,
-    Math.max(1, aantalKlikos),
+  const kortingPct = kortingPctVoorAantal(instellingen.containerKorting, aantal);
+  // Totaal ZONDER korting (voor de doorgestreepte "was"-prijs).
+  const basisTotaal = Math.round(aantal * basisPrijs * 100) / 100;
+  const prijs = totaalMaandPrijs(
+    type,
+    frequentie,
+    aantal,
+    instellingen.prijzen,
     instellingen.containerKorting
   );
 
@@ -103,12 +106,13 @@ export default function AanmeldenPage() {
         telefoon: telefoon.trim(),
         adres: adres.trim(),
         wijk: wijk.trim(),
-        aantalKlikos: Math.max(1, aantalKlikos),
+        aantalKlikos: aantal,
         type,
         taal: klantTaal,
         aangemaaktOp: new Date().toISOString(),
         ...(notitie.trim() ? { notitie: notitie.trim() } : {}),
       });
+      // 1 abonnement voor alle kliko's; prijsPerMaand is het TOTAAL (met korting).
       await createAbonnement({
         klantId,
         type,
@@ -251,17 +255,29 @@ export default function AanmeldenPage() {
                     <span className="text-2xl font-black tabular-nums text-kliko-yellow">
                       {kortingPct > 0 && (
                         <span className="mr-2 text-base font-semibold text-white/50 line-through">
-                          {formatUsd(basisPrijs)}
+                          {formatUsd(basisTotaal)}
                         </span>
                       )}
                       {formatUsd(prijs)}
                       <span className="text-sm font-semibold text-white/70">{t("price.month")}</span>
                     </span>
                   </div>
-                  {kortingPct > 0 && (
-                    <p className="mt-1 text-right text-sm font-semibold text-kliko-yellow">
-                      {t("signup.korting").replace("{pct}", String(kortingPct))}
-                    </p>
+                  {/* Opbouw bij meerdere kliko's: aantal x basisprijs (+ korting).
+                      Alle kliko's zitten op 1 abonnement; dit is het totaal. */}
+                  {aantal >= 2 && (
+                    <>
+                      <p className="mt-1 text-right text-sm font-semibold text-kliko-yellow">
+                        {(kortingPct > 0
+                          ? t("signup.opbouw.korting").replace("{pct}", String(kortingPct))
+                          : t("signup.opbouw.geen")
+                        )
+                          .replace("{n}", String(aantal))
+                          .replace("{basis}", formatUsd(basisPrijs))}
+                      </p>
+                      <p className="mt-1 text-right text-xs font-semibold text-white/60">
+                        {t("signup.1abo")}
+                      </p>
+                    </>
                   )}
                 </div>
               </section>

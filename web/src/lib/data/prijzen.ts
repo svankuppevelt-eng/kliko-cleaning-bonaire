@@ -1,8 +1,11 @@
 // Prijstabel Kliko Cleaning Bonaire - echte tarieven in USD (hele dollars).
 // Per klanttype x frequentie een maandprijs en een jaarprijs (12 maanden in
-// 1 betaling, met korting). Makkelijk aanpasbaar: pas alleen deze tabel aan,
-// de rest van de app leest hem. Office kan de waarden overschrijven via
-// /beheer/instellingen (Firestore-doc instellingen/algemeen).
+// 1 betaling, met korting). LET OP: deze tier-prijzen zijn PER CONTAINER;
+// de totaalprijs van een abonnement (alle containers van de klant samen, met
+// container-korting) reken je met totaalMaandPrijs / totaalJaarPrijs onderaan.
+// Makkelijk aanpasbaar: pas alleen deze tabel aan, de rest van de app leest
+// hem. Office kan de waarden overschrijven via /beheer/instellingen
+// (Firestore-doc instellingen/algemeen).
 import type { Frequentie, KlantType } from "./types";
 
 /** Prijs voor 1 tier: per maand en per jaar (12 maanden vooruit, met korting). */
@@ -91,8 +94,12 @@ export function kortingPctVoorAantal(
 }
 
 /**
- * Pas de container-korting toe op een maandprijs. Geeft de prijs afgerond
- * op hele centen terug; zonder toepasselijke regel gewoon de basisprijs.
+ * Pas de container-korting toe op een maandprijs PER CONTAINER. Geeft de
+ * prijs afgerond op hele centen terug; zonder toepasselijke regel gewoon de
+ * basisprijs. LET OP: dit vermenigvuldigt NIET met het aantal containers.
+ * Voor de totaalprijs van een abonnement (alle containers samen) gebruik je
+ * totaalMaandPrijs / totaalJaarPrijs hieronder; dit blijft alleen bestaan
+ * voor backwards-compat.
  */
 export function prijsMetKorting(
   basisMaandPrijs: number,
@@ -102,6 +109,63 @@ export function prijsMetKorting(
   const pct = kortingPctVoorAantal(regels, aantalContainers);
   if (pct <= 0) return basisMaandPrijs;
   return Math.round(basisMaandPrijs * (100 - pct)) / 100;
+}
+
+// ── Totaalprijs per abonnement (canoniek pad) ────────────────────────────────
+// Alle containers van een klant zitten op 1 abonnement: 1 type + 1 frequentie
+// + een aantal containers (`aantalKlikos` op de klant). De tier-prijs
+// { maand, jaar } bovenaan dit bestand is PER CONTAINER; `prijsPerMaand` op
+// een abonnement is het TOTAAL voor alle containers samen, met de
+// container-korting er al in verrekend. Nieuwe code rekent daarom via deze
+// totaal-helpers; facturen en finance lezen gewoon het opgeslagen
+// `prijsPerMaand` (bestaande abonnementen blijven ongewijzigd).
+
+/** Rond een dollarbedrag af op hele centen. */
+function rondOpCenten(bedrag: number): number {
+  return Math.round(bedrag * 100) / 100;
+}
+
+/** Prijstabel-vorm zoals in de office-instellingen. */
+export type PrijsTabel = Record<KlantType, Record<Frequentie, TierPrijs>>;
+
+/**
+ * TOTALE maandprijs voor een abonnement met `aantalContainers` containers:
+ * aantal x maandprijs-per-container, min de container-korting, afgerond op
+ * hele centen. Zonder expliciete tabel/regels gelden de standaardwaarden;
+ * geef de office-instellingen mee (`instellingen.prijzen` +
+ * `instellingen.containerKorting`) voor de actuele tarieven.
+ */
+export function totaalMaandPrijs(
+  type: KlantType,
+  frequentie: Frequentie,
+  aantalContainers: number,
+  prijzen: PrijsTabel = STANDAARD_PRIJZEN,
+  korting: ContainerKortingRegel[] = STANDAARD_CONTAINER_KORTING
+): number {
+  const aantal = Math.max(1, Math.floor(aantalContainers) || 1);
+  const basis = (prijzen[type]?.[frequentie] ?? STANDAARD_PRIJZEN[type][frequentie])
+    .maand;
+  const pct = kortingPctVoorAantal(korting, aantal);
+  return rondOpCenten((aantal * basis * (100 - pct)) / 100);
+}
+
+/**
+ * TOTALE jaarprijs (12 maanden in 1 betaling) voor een abonnement met
+ * `aantalContainers` containers, met dezelfde container-korting als de
+ * maandprijs. Zelfde regels als totaalMaandPrijs.
+ */
+export function totaalJaarPrijs(
+  type: KlantType,
+  frequentie: Frequentie,
+  aantalContainers: number,
+  prijzen: PrijsTabel = STANDAARD_PRIJZEN,
+  korting: ContainerKortingRegel[] = STANDAARD_CONTAINER_KORTING
+): number {
+  const aantal = Math.max(1, Math.floor(aantalContainers) || 1);
+  const basis = (prijzen[type]?.[frequentie] ?? STANDAARD_PRIJZEN[type][frequentie])
+    .jaar;
+  const pct = kortingPctVoorAantal(korting, aantal);
+  return rondOpCenten((aantal * basis * (100 - pct)) / 100);
 }
 
 /** Formatteer een USD-bedrag, bv. 10 -> "$10" en 12.5 -> "$12.50". */

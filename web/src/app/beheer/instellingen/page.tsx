@@ -14,7 +14,15 @@ import {
   saveInstellingen,
   type Instellingen,
 } from "@/lib/data/instellingen";
-import { FREQUENTIES, formatUsd } from "@/lib/data/prijzen";
+import {
+  FREQUENTIES,
+  formatUsd,
+  kortingPctVoorAantal,
+  totaalJaarPrijs,
+  totaalMaandPrijs,
+  type ContainerKortingRegel,
+  type PrijsTabel,
+} from "@/lib/data/prijzen";
 import type { Frequentie, KlantType } from "@/lib/data/types";
 
 const FREQ_LABEL: Record<Frequentie, string> = {
@@ -68,6 +76,47 @@ function naarForm(inst: Instellingen): FormState {
     cadeauJaarcontract: inst.cadeauJaarcontract,
     containersPerDag: String(inst.containersPerDag),
   };
+}
+
+// Kolommen van de live voorbeeld-matrix: totaalprijs bij 1, 2 en 3 containers.
+const MATRIX_AANTALLEN = [1, 2, 3] as const;
+
+/**
+ * Parse de HUIDIGE (nog niet opgeslagen) formulier-prijzen naar een
+ * prijstabel. Ongeldige invoer wordt NaN; de matrix toont dan "-" in plaats
+ * van een bedrag, zodat het voorbeeld live meebeweegt tijdens het typen.
+ */
+function formNaarPrijsTabel(form: FormState): PrijsTabel {
+  const prijzen = {} as PrijsTabel;
+  for (const { type } of TYPES) {
+    prijzen[type] = {} as PrijsTabel[KlantType];
+    for (const f of FREQUENTIES) {
+      prijzen[type][f] = {
+        maand: Number(form.prijzen[type][f].maand),
+        jaar: Number(form.prijzen[type][f].jaar),
+      };
+    }
+  }
+  return prijzen;
+}
+
+/** Parse alleen de geldige kortingsrijen uit het formulier (live voorbeeld). */
+function formNaarKortingRegels(rijen: KortingRij[]): ContainerKortingRegel[] {
+  const regels: ContainerKortingRegel[] = [];
+  for (const rij of rijen) {
+    const vanafAantal = Number(rij.vanafAantal);
+    const kortingPct = Number(rij.kortingPct);
+    if (
+      Number.isInteger(vanafAantal) &&
+      vanafAantal >= 2 &&
+      Number.isFinite(kortingPct) &&
+      kortingPct > 0 &&
+      kortingPct <= 100
+    ) {
+      regels.push({ vanafAantal, kortingPct });
+    }
+  }
+  return regels;
 }
 
 export default function InstellingenPage() {
@@ -217,6 +266,11 @@ export default function InstellingenPage() {
       setBusy(false);
     }
   }
+
+  // Live voorbeeld-matrix: rekent met de HUIDIGE formulier-waarden, dus ook
+  // vóór het opslaan beweegt hij meteen mee met elke prijs- of korting-wijziging.
+  const matrixPrijzen = form ? formNaarPrijsTabel(form) : null;
+  const matrixKorting = form ? formNaarKortingRegels(form.containerKorting) : [];
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -411,6 +465,88 @@ export default function InstellingenPage() {
                 ))}
               </div>
             )}
+          </section>
+
+          {/* Live voorbeeld: totale maandprijs bij 1, 2 en 3 containers.
+              Alle containers van een klant zitten op 1 abonnement; de cel is
+              dus het totaal voor alle containers samen, met korting. */}
+          <section className="rounded-2xl border border-kliko-navy/10 bg-white p-5 shadow-sm sm:p-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
+              {t("inst.matrix")}
+            </h2>
+            <p className="mt-1 text-xs text-kliko-navy/50">{t("inst.matrix.hint")}</p>
+            <div className="mt-4 flex flex-col gap-5">
+              {TYPES.map(({ type, label }) => (
+                <div key={type}>
+                  <h3 className="font-bold text-kliko-navy">{t(label)}</h3>
+                  <table className="mt-2 w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-xl border border-kliko-navy/10 text-left">
+                    <thead>
+                      <tr className="bg-kliko-navy/[0.04]">
+                        <th className="px-2 py-2 sm:px-3" aria-hidden="true" />
+                        {MATRIX_AANTALLEN.map((n) => {
+                          const pct = kortingPctVoorAantal(matrixKorting, n);
+                          return (
+                            <th key={n} className="px-2 py-2 align-top sm:px-3">
+                              <span className="block text-xs font-bold text-kliko-navy">
+                                {n === 1
+                                  ? t("inst.matrix.kolom1")
+                                  : t("inst.matrix.kolomN").replace("{n}", String(n))}
+                              </span>
+                              <span
+                                className={`block text-[11px] font-semibold ${
+                                  pct > 0 ? "text-kliko-blue" : "text-kliko-navy/40"
+                                }`}
+                              >
+                                {pct > 0
+                                  ? t("inst.matrix.korting").replace("{pct}", String(pct))
+                                  : t("inst.matrix.geenkorting")}
+                              </span>
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {FREQUENTIES.map((f) => (
+                        <tr key={f} className="border-t border-kliko-navy/10">
+                          <th
+                            scope="row"
+                            className="border-t border-kliko-navy/10 px-2 py-2 text-xs font-semibold text-kliko-navy/60 sm:px-3"
+                          >
+                            {t(FREQ_LABEL[f])}
+                          </th>
+                          {MATRIX_AANTALLEN.map((n) => {
+                            const maand = matrixPrijzen
+                              ? totaalMaandPrijs(type, f, n, matrixPrijzen, matrixKorting)
+                              : NaN;
+                            const jaar = matrixPrijzen
+                              ? totaalJaarPrijs(type, f, n, matrixPrijzen, matrixKorting)
+                              : NaN;
+                            return (
+                              <td
+                                key={n}
+                                className="border-t border-kliko-navy/10 px-2 py-2 align-top sm:px-3"
+                              >
+                                <span className="block text-sm font-black tabular-nums text-kliko-navy">
+                                  {Number.isFinite(maand) && maand > 0
+                                    ? formatUsd(maand)
+                                    : "-"}
+                                </span>
+                                <span className="block text-[11px] tabular-nums text-kliko-navy/50">
+                                  {Number.isFinite(jaar) && jaar > 0
+                                    ? `${t("inst.matrix.jaar")}: ${formatUsd(jaar)}`
+                                    : "-"}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
           </section>
 
           {/* Offerte-cadeaus (voorheen onder Verkoop > Prijsbeleid) */}

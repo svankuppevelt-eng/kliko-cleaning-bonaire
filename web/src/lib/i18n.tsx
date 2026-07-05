@@ -62,7 +62,11 @@ const pap: Dict = {
   "signup.type": "Tipo di kliente",
   "signup.freq": "Kuantu biaha pa luna?",
   "signup.price": "Bo preis",
-  "signup.korting": "{pct}% deskuento pa mas kliko",
+  // Opbouw totaalprijs bij meerdere kliko's. LET OP: Papiamentu laten nakijken door Roderick.
+  "signup.opbouw.geen": "{n} kliko x {basis}",
+  "signup.opbouw.korting": "{n} kliko x {basis}, {pct}% deskuento",
+  "signup.1abo":
+    "Tur bo kliko ta kai bou di 1 abono; esaki ta e preis total pa luna.",
   "form.naam": "Nòmber",
   "form.email": "Adrès di e-mail",
   "form.telefoon": "Telefòn / WhatsApp",
@@ -242,8 +246,6 @@ const pap: Dict = {
   "nieuw.gegevens": "Datos di kliente",
   "nieuw.prijs.hint":
     "E preis ta bin outomátikamente for di e tabla di tarifa. Bo por kambia e manualmente.",
-  "nieuw.prijs.korting":
-    "Ku {pct}% deskuento pa mas kontener (preis di base {basis}).",
   "nieuw.submit": "Krea kliente",
   "nieuw.err.save": "No por a krea e kliente. Purba atrobe.",
   "form.buurt.kies": "Skohe un bario",
@@ -251,6 +253,15 @@ const pap: Dict = {
   "form.buurt.anders.placeholder": "Yena e bario",
   "abo.freq": "Kuantu biaha pa luna",
   "abo.prijs": "Preis pa luna (dòler)",
+  // Totaalprijs-opbouw + voorstel in de office-formulieren.
+  // LET OP: Papiamentu laten nakijken door Roderick.
+  "abo.1abo":
+    "Tur kontener di e kliente ta kai bou di 1 abono; e preis ta e total pa luna pa tur kontener huntu.",
+  "abo.opbouw.geen": "{n} kontener x {basis} = {totaal} pa luna",
+  "abo.opbouw.korting":
+    "{n} kontener x {basis}, {pct}% deskuento = {totaal} pa luna",
+  "abo.voorstel": "Proposishon segun e tabla di tarifa: {totaal} pa luna.",
+  "abo.voorstel.gebruik": "Apliká",
   "abo.status": "Status",
   "detail.edit": "Editá",
   "detail.save": "Warda",
@@ -324,6 +335,15 @@ const pap: Dict = {
   "inst.korting.pct": "Deskuento",
   "inst.korting.fout":
     "Regla di deskuento: kantidat mínimo 2 i deskuento entre 1 i 100%.",
+  // Live voorbeeld-matrix 1/2/3 containers. LET OP: Papiamentu laten nakijken door Roderick.
+  "inst.matrix": "Ehèmpel: preis total pa luna",
+  "inst.matrix.hint":
+    "Ta kalkulá mesora ku e preis- i deskuentonan ariba (tambe promé ku warda). Kada sèl ta e preis TOTAL pa luna pa tur kontener huntu; e di dos liña ta e preis pa aña (1 pago).",
+  "inst.matrix.kolom1": "1 kontener",
+  "inst.matrix.kolomN": "{n} kontener",
+  "inst.matrix.korting": "{pct}% deskuento",
+  "inst.matrix.geenkorting": "sin deskuento",
+  "inst.matrix.jaar": "aña",
   "inst.cadeaus": "Regalo di oferta",
   "inst.cadeaus.hint": "E hèrmènt di oferta bou di Venta ta usa e tekstonan aki.",
   "inst.cadeau.welkom": "Regalo di bienvenida (tur hende)",
@@ -604,7 +624,11 @@ const nl: Dict = {
   "signup.type": "Type klant",
   "signup.freq": "Hoe vaak per maand?",
   "signup.price": "Jouw prijs",
-  "signup.korting": "{pct}% korting bij meerdere kliko's",
+  // Opbouw van de totaalprijs bij meerdere kliko's.
+  "signup.opbouw.geen": "{n} kliko's x {basis}",
+  "signup.opbouw.korting": "{n} kliko's x {basis}, {pct}% korting",
+  "signup.1abo":
+    "Al je kliko's vallen onder 1 abonnement; dit is de totaalprijs per maand.",
   "form.naam": "Naam",
   "form.email": "E-mailadres",
   "form.telefoon": "Telefoon / WhatsApp",
@@ -784,8 +808,6 @@ const nl: Dict = {
   "nieuw.gegevens": "Klantgegevens",
   "nieuw.prijs.hint":
     "De prijs komt automatisch uit de prijstabel. Je kunt hem handmatig aanpassen.",
-  "nieuw.prijs.korting":
-    "Met {pct}% containerkorting (basisprijs {basis}).",
   "nieuw.submit": "Klant aanmaken",
   "nieuw.err.save": "De klant aanmaken is niet gelukt. Probeer het opnieuw.",
   "form.buurt.kies": "Kies een wijk",
@@ -793,6 +815,14 @@ const nl: Dict = {
   "form.buurt.anders.placeholder": "Vul de wijk in",
   "abo.freq": "Hoe vaak per maand",
   "abo.prijs": "Prijs per maand (dollar)",
+  // Totaalprijs-opbouw + voorstel in de office-formulieren.
+  "abo.1abo":
+    "Alle containers van de klant zitten op 1 abonnement; de prijs is het totaal per maand voor alle containers samen.",
+  "abo.opbouw.geen": "{n} containers x {basis} = {totaal} per maand",
+  "abo.opbouw.korting":
+    "{n} containers x {basis}, {pct}% korting = {totaal} per maand",
+  "abo.voorstel": "Voorstel volgens de prijstabel: {totaal} per maand.",
+  "abo.voorstel.gebruik": "Overnemen",
   "abo.status": "Status",
   "detail.edit": "Bewerken",
   "detail.save": "Opslaan",
@@ -864,6 +894,15 @@ const nl: Dict = {
   "inst.korting.pct": "Korting",
   "inst.korting.fout":
     "Kortingsregels: vanaf-aantal minimaal 2 en korting tussen 1 en 100%.",
+  // Live voorbeeld-matrix 1/2/3 containers.
+  "inst.matrix": "Voorbeeld: totaalprijs per maand",
+  "inst.matrix.hint":
+    "Rekent live mee met de prijzen en kortingen hierboven (ook vóór het opslaan). Elke cel is de TOTALE maandprijs voor alle containers samen; de tweede regel is de jaarprijs (1 betaling).",
+  "inst.matrix.kolom1": "1 container",
+  "inst.matrix.kolomN": "{n} containers",
+  "inst.matrix.korting": "{pct}% korting",
+  "inst.matrix.geenkorting": "geen korting",
+  "inst.matrix.jaar": "jaar",
   "inst.cadeaus": "Offerte-cadeaus",
   "inst.cadeaus.hint": "De offerte-tool onder Verkoop gebruikt deze teksten.",
   "inst.cadeau.welkom": "Welkomstcadeau (iedereen)",
@@ -1247,7 +1286,11 @@ const en: Dict = {
   "signup.type": "Customer type",
   "signup.freq": "How often per month?",
   "signup.price": "Your price",
-  "signup.korting": "{pct}% discount for multiple bins",
+  // Breakdown of the total price for multiple bins.
+  "signup.opbouw.geen": "{n} bins x {basis}",
+  "signup.opbouw.korting": "{n} bins x {basis}, {pct}% discount",
+  "signup.1abo":
+    "All your bins are on 1 subscription; this is the total price per month.",
   "form.naam": "Name",
   "form.email": "Email address",
   "form.telefoon": "Phone / WhatsApp",
@@ -1425,8 +1468,6 @@ const en: Dict = {
   "nieuw.gegevens": "Customer details",
   "nieuw.prijs.hint":
     "The price is filled automatically from the price table. You can override it manually.",
-  "nieuw.prijs.korting":
-    "With {pct}% multi-container discount (base price {basis}).",
   "nieuw.submit": "Create customer",
   "nieuw.err.save": "Creating the customer failed. Please try again.",
   "form.buurt.kies": "Choose a neighbourhood",
@@ -1434,6 +1475,14 @@ const en: Dict = {
   "form.buurt.anders.placeholder": "Enter the neighbourhood",
   "abo.freq": "How often per month",
   "abo.prijs": "Price per month (dollars)",
+  // Total-price breakdown + suggestion in the office forms.
+  "abo.1abo":
+    "All of the customer's containers are on 1 subscription; the price is the monthly total for all containers together.",
+  "abo.opbouw.geen": "{n} containers x {basis} = {totaal} per month",
+  "abo.opbouw.korting":
+    "{n} containers x {basis}, {pct}% discount = {totaal} per month",
+  "abo.voorstel": "Suggested from the price table: {totaal} per month.",
+  "abo.voorstel.gebruik": "Apply",
   "abo.status": "Status",
   "detail.edit": "Edit",
   "detail.save": "Save",
@@ -1505,6 +1554,15 @@ const en: Dict = {
   "inst.korting.pct": "Discount",
   "inst.korting.fout":
     "Discount rules: minimum count 2 and discount between 1 and 100%.",
+  // Live example matrix 1/2/3 containers.
+  "inst.matrix": "Example: total price per month",
+  "inst.matrix.hint":
+    "Updates live with the prices and discounts above (before saving too). Each cell is the TOTAL monthly price for all containers together; the second line is the yearly price (1 payment).",
+  "inst.matrix.kolom1": "1 container",
+  "inst.matrix.kolomN": "{n} containers",
+  "inst.matrix.korting": "{pct}% discount",
+  "inst.matrix.geenkorting": "no discount",
+  "inst.matrix.jaar": "year",
   "inst.cadeaus": "Quote gifts",
   "inst.cadeaus.hint": "Used by the quote tool under Sales.",
   "inst.cadeau.welkom": "Welcome gift (everyone)",

@@ -13,7 +13,7 @@ import {
   FREQUENTIES,
   formatUsd,
   kortingPctVoorAantal,
-  prijsMetKorting,
+  totaalMaandPrijs,
 } from "@/lib/data/prijzen";
 import { WERKDAGEN } from "@/lib/data/planning";
 import { useInstellingen } from "@/lib/use-instellingen";
@@ -71,15 +71,16 @@ export default function NieuweKlantPage() {
 
   // Prijs beweegt automatisch mee met type/frequentie/aantal kliko's zolang
   // hij niet handmatig is overschreven (afgeleide waarde, geen effect nodig).
-  // Bij meerdere kliko's geldt de instelbare container-korting.
+  // Alle containers zitten op 1 abonnement: de prijs is het TOTAAL voor alle
+  // containers samen (aantal x basisprijs, min de container-korting).
+  const aantal = Math.max(1, aantalKlikos);
   const basisPrijs = instellingen.prijzen[type][frequentie].maand;
-  const kortingPct = kortingPctVoorAantal(
-    instellingen.containerKorting,
-    Math.max(1, aantalKlikos)
-  );
-  const autoPrijs = prijsMetKorting(
-    basisPrijs,
-    Math.max(1, aantalKlikos),
+  const kortingPct = kortingPctVoorAantal(instellingen.containerKorting, aantal);
+  const autoPrijs = totaalMaandPrijs(
+    type,
+    frequentie,
+    aantal,
+    instellingen.prijzen,
     instellingen.containerKorting
   );
   const prijsWaarde = prijsHandmatig ? prijs : String(autoPrijs);
@@ -114,7 +115,7 @@ export default function NieuweKlantPage() {
         telefoon: telefoon.trim(),
         adres: adres.trim(),
         wijk: wijk.trim(),
-        aantalKlikos: Math.max(1, aantalKlikos),
+        aantalKlikos: aantal,
         type,
         taal,
         aangemaaktOp: new Date().toISOString(),
@@ -237,6 +238,8 @@ export default function NieuweKlantPage() {
           <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
             {t("detail.abonnement")}
           </h2>
+          {/* 1 abonnement voor alle containers; de prijs is het maand-totaal. */}
+          <p className="mt-1 text-xs text-kliko-navy/50">{t("abo.1abo")}</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="frequentie" className={labelCls}>{t("abo.freq")}</label>
@@ -269,11 +272,16 @@ export default function NieuweKlantPage() {
                 inputMode="decimal"
               />
               <p className="mt-1 text-xs text-kliko-navy/50">{t("nieuw.prijs.hint")}</p>
-              {kortingPct > 0 && !prijsHandmatig && (
+              {/* Opbouw van het voorstel: aantal x basisprijs (+ korting) = totaal. */}
+              {aantal >= 2 && !prijsHandmatig && (
                 <p className="mt-1 text-xs font-semibold text-kliko-blue">
-                  {t("nieuw.prijs.korting")
-                    .replace("{pct}", String(kortingPct))
-                    .replace("{basis}", formatUsd(basisPrijs))}
+                  {(kortingPct > 0
+                    ? t("abo.opbouw.korting").replace("{pct}", String(kortingPct))
+                    : t("abo.opbouw.geen")
+                  )
+                    .replace("{n}", String(aantal))
+                    .replace("{basis}", formatUsd(basisPrijs))
+                    .replace("{totaal}", formatUsd(autoPrijs))}
                 </p>
               )}
             </div>

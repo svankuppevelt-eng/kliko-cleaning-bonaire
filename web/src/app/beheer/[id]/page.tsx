@@ -16,8 +16,13 @@ import {
   updateKlant,
 } from "@/lib/data/klanten";
 import { listReinigingenVoorKlant } from "@/lib/data/reinigingen";
-import { formatUsd } from "@/lib/data/prijzen";
+import {
+  formatUsd,
+  kortingPctVoorAantal,
+  totaalMaandPrijs,
+} from "@/lib/data/prijzen";
 import { WERKDAGEN } from "@/lib/data/planning";
+import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
 import { BuurtVeld } from "@/components/buurt-veld";
 import type {
@@ -75,6 +80,9 @@ export default function KlantDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { buurten, geladen: buurtenGeladen } = useActieveBuurten();
+  // Office-prijstabel + container-korting voor het prijs-voorstel in de
+  // bewerk-modus (valt terug op de standaardtarieven).
+  const { instellingen } = useInstellingen();
 
   // Zonder Firebase-config meteen "niet gevonden" (lazy initializer).
   const [klant, setKlant] = useState<Klant | null | undefined>(() =>
@@ -105,6 +113,26 @@ export default function KlantDetailPage() {
   }, [params?.id]);
 
   const hoofdAbo = abos[0] as Abonnement | undefined;
+
+  // Prijs-voorstel in bewerk-modus: TOTAAL voor alle containers op het (ene)
+  // abonnement, met container-korting. Alleen ter suggestie; de opgeslagen
+  // prijsPerMaand verandert pas als office hem overneemt en opslaat.
+  const editAantal = edit ? Math.max(1, Number(edit.aantalKlikos) || 1) : 1;
+  const editBasisPrijs = edit
+    ? instellingen.prijzen[edit.type][edit.frequentie].maand
+    : 0;
+  const editKortingPct = edit
+    ? kortingPctVoorAantal(instellingen.containerKorting, editAantal)
+    : 0;
+  const editVoorstel = edit
+    ? totaalMaandPrijs(
+        edit.type,
+        edit.frequentie,
+        editAantal,
+        instellingen.prijzen,
+        instellingen.containerKorting
+      )
+    : 0;
 
   function startEdit() {
     if (!klant) return;
@@ -312,6 +340,8 @@ export default function KlantDetailPage() {
               <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
                 {t("detail.abonnement")}
               </h2>
+              {/* 1 abonnement voor alle containers; de prijs is het maand-totaal. */}
+              <p className="mt-1 text-xs text-kliko-navy/50">{t("abo.1abo")}</p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="e-freq" className={labelCls}>{t("abo.freq")}</label>
@@ -324,6 +354,29 @@ export default function KlantDetailPage() {
                 <div>
                   <label htmlFor="e-prijs" className={labelCls}>{t("abo.prijs")}</label>
                   <input id="e-prijs" type="number" min={1} step="0.01" className={inputCls} value={edit.prijs} onChange={(e) => setEdit({ ...edit, prijs: e.target.value })} inputMode="decimal" />
+                  {/* Voorstel volgens de prijstabel (totaal voor alle containers,
+                      met korting); office neemt hem over met 1 klik. */}
+                  <p className="mt-1 text-xs text-kliko-navy/50">
+                    {t("abo.voorstel").replace("{totaal}", formatUsd(editVoorstel))}{" "}
+                    <button
+                      type="button"
+                      onClick={() => setEdit({ ...edit, prijs: String(editVoorstel) })}
+                      className="font-bold text-kliko-blue hover:underline"
+                    >
+                      {t("abo.voorstel.gebruik")}
+                    </button>
+                  </p>
+                  {editAantal >= 2 && (
+                    <p className="mt-1 text-xs font-semibold text-kliko-blue">
+                      {(editKortingPct > 0
+                        ? t("abo.opbouw.korting").replace("{pct}", String(editKortingPct))
+                        : t("abo.opbouw.geen")
+                      )
+                        .replace("{n}", String(editAantal))
+                        .replace("{basis}", formatUsd(editBasisPrijs))
+                        .replace("{totaal}", formatUsd(editVoorstel))}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="e-status" className={labelCls}>{t("abo.status")}</label>
