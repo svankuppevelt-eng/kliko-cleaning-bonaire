@@ -429,6 +429,48 @@ const pap: Dict = {
   "site.f.menu2": "Link di menu 2",
   "site.f.menu3": "Link di menu 3",
   "site.f.menuknop": "Boton di registrá",
+  // Mail-module (templates + versturen). LET OP: Papiamentu laten nakijken door Roderick.
+  "shell.mails": "E-mailnan",
+  "mails.title": "Teksto di e-mail",
+  "mails.sub":
+    "Maneha e e-mailnan ku e app ta manda, pa idioma. Kambionan ta konta mesora.",
+  "mails.uitleg":
+    "Laga un veld bashí = e teksto estándar ta wòrdu usá. E teksto shinishi den kada veld ta e estándar. Variabelnan manera {{naam}} ta wòrdu yená automátikamente ora di manda.",
+  "mails.loading": "Ta karga teksto di e-mail...",
+  "mails.onderwerp": "Asunto",
+  "mails.body": "Mensahe",
+  "mails.variabelen": "Variabel disponibel",
+  "mails.save": "Warda",
+  "mails.saved": "Teksto di e-mail wardá.",
+  "mails.err.save": "No por a warda. Purba atrobe.",
+  "mails.test": "Manda test na mi",
+  "mails.test.busy": "Ta manda...",
+  "mails.test.ok": "Test-mail mandá na",
+  "mails.test.err": "No por a manda e test-mail.",
+  "mails.tpl.aanmelding": "Konfirmashon di registrashon",
+  "mails.tpl.aanmelding.uitleg":
+    "Ta bai automátikamente na e kliente despues di un registrashon via e wèpsait.",
+  "mails.tpl.factuur": "Faktura",
+  "mails.tpl.factuur.uitleg":
+    "Ta bai huntu ku e PDF di faktura via e boton 'Manda pa e-mail' riba un faktura.",
+  "mails.tpl.herinnering": "Rekordatorio di pago",
+  "mails.tpl.herinnering.uitleg":
+    "Via e boton 'Manda rekordatorio' riba un faktura habrí.",
+  "mails.tpl.komtMorgen": "Nos ta bin mañan",
+  "mails.tpl.komtMorgen.uitleg":
+    "Kla pa despues: un mensahe pa e kliente riba e dia promé ku e limpiesa.",
+  "mails.tpl.gedaan": "Limpiesa kla",
+  "mails.tpl.gedaan.uitleg":
+    "Kla pa despues: un mensahe pa e kliente despues di e limpiesa.",
+  "mail.nietactief":
+    "Manda e-mail no ta aktivo ainda: e konfigurashon di mail (Resend) no ta kla.",
+  "fact.mail": "Manda pa e-mail",
+  "fact.mail.busy": "Ta manda...",
+  "fact.mail.ok": "Faktura mandá pa e-mail.",
+  "fact.mail.err": "No por a manda e e-mail. Purba atrobe.",
+  "fact.mail.geenemail": "E kliente aki no tin adrès di e-mail.",
+  "fact.herinnering": "Manda rekordatorio",
+  "fact.herinnering.ok": "Rekordatorio mandá.",
 };
 
 const nl: Dict = {
@@ -966,6 +1008,48 @@ const nl: Dict = {
   "site.f.menu2": "Menulink 2",
   "site.f.menu3": "Menulink 3",
   "site.f.menuknop": "Aanmeld-knop",
+  // Mail-module (templates + versturen).
+  "shell.mails": "Mails",
+  "mails.title": "Mailteksten",
+  "mails.sub":
+    "Beheer de e-mails die de app verstuurt, per taal. Wijzigingen gelden direct.",
+  "mails.uitleg":
+    "Laat een veld leeg = de standaardtekst wordt gebruikt. De grijze tekst in elk veld is die standaard. Variabelen zoals {{naam}} worden bij het versturen automatisch ingevuld.",
+  "mails.loading": "Mailteksten laden...",
+  "mails.onderwerp": "Onderwerp",
+  "mails.body": "Bericht",
+  "mails.variabelen": "Beschikbare variabelen",
+  "mails.save": "Opslaan",
+  "mails.saved": "Mailteksten opgeslagen.",
+  "mails.err.save": "Opslaan is niet gelukt. Probeer het opnieuw.",
+  "mails.test": "Stuur test naar mij",
+  "mails.test.busy": "Versturen...",
+  "mails.test.ok": "Test-mail verstuurd naar",
+  "mails.test.err": "De test-mail kon niet worden verstuurd.",
+  "mails.tpl.aanmelding": "Aanmeldbevestiging",
+  "mails.tpl.aanmelding.uitleg":
+    "Gaat automatisch naar de klant na een aanmelding via de website.",
+  "mails.tpl.factuur": "Factuur",
+  "mails.tpl.factuur.uitleg":
+    "Gaat samen met de factuur-PDF via de knop 'Verstuur per e-mail' op een factuur.",
+  "mails.tpl.herinnering": "Betaalherinnering",
+  "mails.tpl.herinnering.uitleg":
+    "Via de knop 'Stuur herinnering' op een openstaande factuur.",
+  "mails.tpl.komtMorgen": "Wij komen morgen",
+  "mails.tpl.komtMorgen.uitleg":
+    "Staat klaar voor later: een berichtje aan de klant op de dag voor de reiniging.",
+  "mails.tpl.gedaan": "Reiniging klaar",
+  "mails.tpl.gedaan.uitleg":
+    "Staat klaar voor later: een berichtje aan de klant na afloop van de reiniging.",
+  "mail.nietactief":
+    "E-mail versturen is nog niet actief: de mail-instellingen (Resend) zijn nog niet gezet.",
+  "fact.mail": "Verstuur per e-mail",
+  "fact.mail.busy": "Versturen...",
+  "fact.mail.ok": "Factuur per e-mail verstuurd.",
+  "fact.mail.err": "De e-mail kon niet worden verstuurd. Probeer het opnieuw.",
+  "fact.mail.geenemail": "Deze klant heeft geen e-mailadres.",
+  "fact.herinnering": "Stuur herinnering",
+  "fact.herinnering.ok": "Herinnering verstuurd.",
 };
 
 const en: Dict = {
@@ -1375,6 +1459,48 @@ const en: Dict = {
   "site.f.menu2": "Menu link 2",
   "site.f.menu3": "Menu link 3",
   "site.f.menuknop": "Sign-up button",
+  // Mail module (templates + sending).
+  "shell.mails": "Emails",
+  "mails.title": "Email texts",
+  "mails.sub":
+    "Manage the emails the app sends, per language. Changes apply immediately.",
+  "mails.uitleg":
+    "Leave a field empty = the default text is used. The grey text in each field is that default. Variables such as {{naam}} are filled in automatically when sending.",
+  "mails.loading": "Loading email texts...",
+  "mails.onderwerp": "Subject",
+  "mails.body": "Message",
+  "mails.variabelen": "Available variables",
+  "mails.save": "Save",
+  "mails.saved": "Email texts saved.",
+  "mails.err.save": "Saving failed. Please try again.",
+  "mails.test": "Send test to me",
+  "mails.test.busy": "Sending...",
+  "mails.test.ok": "Test email sent to",
+  "mails.test.err": "The test email could not be sent.",
+  "mails.tpl.aanmelding": "Sign-up confirmation",
+  "mails.tpl.aanmelding.uitleg":
+    "Sent automatically to the customer after a sign-up via the website.",
+  "mails.tpl.factuur": "Invoice",
+  "mails.tpl.factuur.uitleg":
+    "Sent along with the invoice PDF via the 'Send by email' button on an invoice.",
+  "mails.tpl.herinnering": "Payment reminder",
+  "mails.tpl.herinnering.uitleg":
+    "Via the 'Send reminder' button on an outstanding invoice.",
+  "mails.tpl.komtMorgen": "We are coming tomorrow",
+  "mails.tpl.komtMorgen.uitleg":
+    "Ready for later: a message to the customer the day before the cleaning.",
+  "mails.tpl.gedaan": "Cleaning done",
+  "mails.tpl.gedaan.uitleg":
+    "Ready for later: a message to the customer after the cleaning.",
+  "mail.nietactief":
+    "Sending email is not active yet: the mail settings (Resend) have not been configured.",
+  "fact.mail": "Send by email",
+  "fact.mail.busy": "Sending...",
+  "fact.mail.ok": "Invoice sent by email.",
+  "fact.mail.err": "The email could not be sent. Please try again.",
+  "fact.mail.geenemail": "This customer has no email address.",
+  "fact.herinnering": "Send reminder",
+  "fact.herinnering.ok": "Reminder sent.",
 };
 
 const DICTS: Record<Lang, Dict> = { pap, nl, en };

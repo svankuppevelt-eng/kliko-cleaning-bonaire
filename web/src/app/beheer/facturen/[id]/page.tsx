@@ -15,6 +15,14 @@ import {
   markeerBetaald,
   markeerVerstuurd,
 } from "@/lib/data/facturen";
+import { getKlant } from "@/lib/data/klanten";
+import {
+  effectieveMailTekst,
+  getMailTemplates,
+  vulTemplate,
+  type MailTemplateKey,
+} from "@/lib/data/mail-templates";
+import { mailHtml, verstuurMail } from "@/lib/mail-verzenden";
 import {
   effectieveStatus,
   formatUsdCent,
@@ -43,6 +51,12 @@ export default function FactuurDetailPage() {
   const [pdfBezig, setPdfBezig] = useState(false);
   const [statusBezig, setStatusBezig] = useState(false);
   const [foutKey, setFoutKey] = useState<string | null>(null);
+  // "factuur" | "herinnering" tijdens het versturen, anders null.
+  const [mailBezig, setMailBezig] = useState<MailTemplateKey | null>(null);
+  const [mailMelding, setMailMelding] = useState<{
+    tekst: string;
+    fout: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!isFirebaseConfigured()) {
@@ -66,6 +80,69 @@ export default function FactuurDetailPage() {
       setFoutKey("fact.err.pdf");
     } finally {
       setPdfBezig(false);
+    }
+  }
+
+  /**
+   * Verstuur de factuur (met PDF-bijlage) of een betaalherinnering per
+   * e-mail naar de klant. Bij een geslaagde factuur-mail gaat de status
+   * van concept naar verstuurd; is mail nog niet actief (Resend-env-vars
+   * niet gezet), dan blijft de status onaangeroerd en legt de melding
+   * dat uit.
+   */
+  async function verstuurPerMail(soort: "factuur" | "herinnering") {
+    if (!factuur || mailBezig) return;
+    setMailBezig(soort);
+    setMailMelding(null);
+    try {
+      const klant = await getKlant(factuur.klantId);
+      const to = klant?.email?.trim();
+      if (!to) {
+        setMailMelding({ tekst: t("fact.mail.geenemail"), fout: true });
+        return;
+      }
+      // PDF-bijlage: zelfde template als de download-knop, base64 voor Resend.
+      const { factuurPdfBijlage } = await import("@/lib/facturen-pdf");
+      const bijlage = await factuurPdfBijlage(factuur);
+      // Mailtekst in de actieve office-taal (klant-taalvoorkeur is er nog
+      // niet als veld; office kiest de taal via de taalwissel).
+      const overrides = await getMailTemplates();
+      const tekst = effectieveMailTekst(overrides, soort, lang);
+      const vars = {
+        naam: factuur.klantNaam,
+        factuurnummer: factuur.nummer,
+        bedrag: formatUsdCent(factuur.totaalCentIncl),
+        periode: maandLabel(factuur.periode),
+        vervaldatum: formatDatum(factuur.vervaldatum, lang),
+        datum: formatDatum(new Date().toISOString(), lang),
+      };
+      const resultaat = await verstuurMail({
+        to,
+        subject: vulTemplate(tekst.onderwerp, vars),
+        html: mailHtml(vulTemplate(tekst.body, vars)),
+        attachment: bijlage,
+      });
+      if (!resultaat.configured) {
+        setMailMelding({ tekst: t("mail.nietactief"), fout: true });
+        return;
+      }
+      if (!resultaat.ok) {
+        setMailMelding({ tekst: t("fact.mail.err"), fout: true });
+        return;
+      }
+      // Mail is echt verstuurd: concept-factuur wordt "verstuurd".
+      if (soort === "factuur" && factuur.status === "concept") {
+        await markeerVerstuurd(factuur.id);
+        setFactuur({ ...factuur, status: "verstuurd" });
+      }
+      setMailMelding({
+        tekst: t(soort === "factuur" ? "fact.mail.ok" : "fact.herinnering.ok"),
+        fout: false,
+      });
+    } catch {
+      setMailMelding({ tekst: t("fact.mail.err"), fout: true });
+    } finally {
+      setMailBezig(null);
     }
   }
 
@@ -216,6 +293,24 @@ export default function FactuurDetailPage() {
         >
           {pdfBezig ? t("fact.download.busy") : t("fact.download")}
         </button>
+        <button
+          onClick={() => verstuurPerMail("factuur")}
+          disabled={mailBezig !== null}
+          className="rounded-full bg-kliko-blue px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+        >
+          {mailBezig === "factuur" ? t("fact.mail.busy") : t("fact.mail")}
+        </button>
+        {(status === "verstuurd" || status === "teLaat") && (
+          <button
+            onClick={() => verstuurPerMail("herinnering")}
+            disabled={mailBezig !== null}
+            className="rounded-full border border-kliko-red/40 px-5 py-2.5 text-sm font-bold text-kliko-red disabled:opacity-50"
+          >
+            {mailBezig === "herinnering"
+              ? t("fact.mail.busy")
+              : t("fact.herinnering")}
+          </button>
+        )}
         {factuur.status === "concept" && (
           <button
             onClick={() => zetStatus("verstuurd")}
@@ -243,6 +338,18 @@ export default function FactuurDetailPage() {
           {t("fact.betaallink")}
         </button>
       </div>
+      {mailMelding && (
+        <p
+          role="alert"
+          className={`mt-3 rounded-xl border px-4 py-3 text-sm font-semibold ${
+            mailMelding.fout
+              ? "border-kliko-red/30 bg-kliko-red/10 text-kliko-red"
+              : "border-kliko-blue/30 bg-kliko-blue/10 text-kliko-blue"
+          }`}
+        >
+          {mailMelding.tekst}
+        </p>
+      )}
       <p className="mt-2 text-xs text-kliko-navy/50">{t("fact.betaallink.note")}</p>
     </div>
   );

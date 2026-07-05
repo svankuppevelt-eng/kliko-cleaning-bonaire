@@ -320,12 +320,37 @@ async function haalLogoDataUrl(): Promise<string | undefined> {
   }
 }
 
-/** Genereer de PDF client-side en start een download (<nummer>.pdf). */
-export async function downloadFactuurPdf(factuur: Factuur): Promise<void> {
+/** Render de factuur-PDF client-side naar een Blob (gedeeld door download + mail). */
+async function maakFactuurPdfBlob(factuur: Factuur): Promise<Blob> {
   const logoDataUrl = await haalLogoDataUrl();
-  const blob = await pdf(
+  return pdf(
     <FactuurTemplate factuur={factuur} logoDataUrl={logoDataUrl} />
   ).toBlob();
+}
+
+/**
+ * Factuur-PDF als mail-bijlage: zelfde template als de download, maar dan
+ * base64-gecodeerd voor de Resend-API (via /api/mail).
+ */
+export async function factuurPdfBijlage(
+  factuur: Factuur
+): Promise<{ filename: string; base64: string }> {
+  const blob = await maakFactuurPdfBlob(factuur);
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+  // readAsDataURL geeft "data:application/pdf;base64,<...>"; alleen het
+  // base64-deel is nodig voor de attachment.
+  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  return { filename: `${factuur.nummer}.pdf`, base64 };
+}
+
+/** Genereer de PDF client-side en start een download (<nummer>.pdf). */
+export async function downloadFactuurPdf(factuur: Factuur): Promise<void> {
+  const blob = await maakFactuurPdfBlob(factuur);
   const url = URL.createObjectURL(blob);
   try {
     const a = document.createElement("a");

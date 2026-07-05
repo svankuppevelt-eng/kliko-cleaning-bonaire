@@ -10,6 +10,12 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useI18n } from "@/lib/i18n";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createAbonnement, createKlant } from "@/lib/data/klanten";
+import {
+  effectieveMailTekst,
+  getMailTemplates,
+  vulTemplate,
+} from "@/lib/data/mail-templates";
+import { mailHtml, verstuurMail } from "@/lib/mail-verzenden";
 import { FREQUENTIES, formatUsd } from "@/lib/data/prijzen";
 import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
@@ -26,7 +32,7 @@ const inputCls =
   "w-full rounded-xl border border-kliko-navy/20 bg-white px-4 py-3 text-base text-kliko-navy placeholder:text-kliko-navy/40 focus:border-kliko-blue focus:outline-none focus:ring-2 focus:ring-kliko-blue/30";
 
 export default function AanmeldenPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   // Office-instelbare prijstabel; valt terug op de constanten zolang het
   // instellingen-doc er niet is of Firestore onbereikbaar is.
   const { instellingen } = useInstellingen();
@@ -88,6 +94,29 @@ export default function AanmeldenPage() {
         status: "actief",
         startdatum: new Date().toISOString().slice(0, 10),
       });
+      // Bevestigingsmail in de taal waarin de bezoeker zich aanmeldde.
+      // Een mailfout mag de aanmelding NOOIT breken: de klant is al
+      // opgeslagen, dus fouten worden hier stil genegeerd (verstuurMail
+      // gooit zelf ook nooit).
+      try {
+        const overrides = await getMailTemplates();
+        const tekst = effectieveMailTekst(overrides, "aanmelding", lang);
+        const vars = {
+          naam: naam.trim(),
+          type: t(type === "huishouden" ? "price.home" : "price.biz"),
+          frequentie: t(FREQ_LABEL[frequentie]),
+          datum: new Date().toLocaleDateString(
+            lang === "en" ? "en-GB" : "nl-NL"
+          ),
+        };
+        await verstuurMail({
+          to: email.trim().toLowerCase(),
+          subject: vulTemplate(tekst.onderwerp, vars),
+          html: mailHtml(vulTemplate(tekst.body, vars)),
+        });
+      } catch {
+        // Stil negeren: aanmelding is gelukt, mail volgt desnoods handmatig.
+      }
       setDone(true);
     } catch {
       setError(t("form.err.save"));
