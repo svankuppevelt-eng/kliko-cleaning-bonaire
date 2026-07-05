@@ -14,6 +14,7 @@ import {
 import { WERKDAGEN } from "@/lib/data/planning";
 import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
+import type { Buurt } from "@/lib/data/buurten";
 import type { Abonnement, Klant, Weekdag } from "@/lib/data/types";
 
 const FREQ_LABEL: Record<number, string> = {
@@ -21,6 +22,24 @@ const FREQ_LABEL: Record<number, string> = {
   2: "price.f2",
   4: "price.f4",
 };
+
+/**
+ * Label "Selibon: dinsdag ochtend" voor bij een wijk-kop, zodat office de
+ * route kan afstemmen op de afvalophaaldag van Selibon. Onbekend = null
+ * (dan tonen we niets).
+ */
+function selibonTekst(
+  buurt: Buurt | undefined,
+  t: (key: string) => string
+): string | null {
+  if (!buurt || (buurt.selibonDag == null && buurt.selibonDagdeel == null)) {
+    return null;
+  }
+  const delen: string[] = [];
+  if (buurt.selibonDag != null) delen.push(t(`dag.${buurt.selibonDag}`));
+  if (buurt.selibonDagdeel) delen.push(t(`dagdeel.${buurt.selibonDagdeel}`));
+  return `${t("selibon.label")}: ${delen.join(" ")}`;
+}
 
 interface Rij {
   klant: Klant;
@@ -60,6 +79,11 @@ export default function PlanningPage() {
   // /vandaag rijdt), onbekende buurten achteraan, binnen een buurt op naam.
   const buurtVolgorde = useMemo(
     () => new Map(buurten.map((b) => [b.naam, b.volgorde])),
+    [buurten]
+  );
+  // Voor de Selibon-info bij de wijk-koppen: buurt opzoeken op naam.
+  const buurtPerNaam = useMemo(
+    () => new Map(buurten.map((b) => [b.naam, b])),
     [buurten]
   );
   const gesorteerd = useMemo(() => {
@@ -284,18 +308,26 @@ export default function PlanningPage() {
                     </p>
                   ) : (
                     <div className="mt-3 flex flex-col gap-3">
-                      {wijken.map((wijk) => (
-                        <div key={wijk}>
-                          <h3 className="text-xs font-bold uppercase tracking-wider text-kliko-blue">
-                            {wijk}
-                          </h3>
-                          <ul className="mt-1.5 flex flex-col gap-2">
-                            {vanDag
-                              .filter((r) => r.klant.wijk === wijk)
-                              .map(klantRij)}
-                          </ul>
-                        </div>
-                      ))}
+                      {wijken.map((wijk) => {
+                        const selibon = selibonTekst(buurtPerNaam.get(wijk), t);
+                        return (
+                          <div key={wijk}>
+                            <h3 className="flex flex-wrap items-baseline gap-x-2 text-xs font-bold uppercase tracking-wider text-kliko-blue">
+                              {wijk}
+                              {selibon && (
+                                <span className="font-semibold normal-case tracking-normal text-kliko-navy/50">
+                                  {selibon}
+                                </span>
+                              )}
+                            </h3>
+                            <ul className="mt-1.5 flex flex-col gap-2">
+                              {vanDag
+                                .filter((r) => r.klant.wijk === wijk)
+                                .map(klantRij)}
+                            </ul>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </section>

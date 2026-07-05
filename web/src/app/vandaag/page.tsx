@@ -19,6 +19,7 @@ import {
   type ReinigingInput,
 } from "@/lib/data/reinigingen";
 import { isVandaagDue, isoDatum } from "@/lib/data/planning";
+import type { Buurt } from "@/lib/data/buurten";
 import type { Abonnement, Klant } from "@/lib/data/types";
 
 type StopFase = "open" | "bezig" | "gedaan" | "overgeslagen" | "fout";
@@ -52,6 +53,24 @@ const MAX_STOPS_PER_ROUTE = 10;
 /** Adres URL-encoded met ", Bonaire" erachter, voor Google Maps. */
 function mapsAdres(stop: Stop): string {
   return encodeURIComponent(`${stop.klant.adres}, Bonaire`);
+}
+
+/**
+ * Label "Selibon: dinsdag ochtend" bij de eerste stop van een wijk, zodat de
+ * schoonmaker ziet wanneer Selibon daar het afval ophaalt (klikos staan dan
+ * buiten). Onbekend = null, dan tonen we niets.
+ */
+function selibonTekst(
+  buurt: Buurt | undefined,
+  t: (key: string) => string
+): string | null {
+  if (!buurt || (buurt.selibonDag == null && buurt.selibonDagdeel == null)) {
+    return null;
+  }
+  const delen: string[] = [];
+  if (buurt.selibonDag != null) delen.push(t(`dag.${buurt.selibonDag}`));
+  if (buurt.selibonDagdeel) delen.push(t(`dagdeel.${buurt.selibonDagdeel}`));
+  return `${t("selibon.label")}: ${delen.join(" ")}`;
 }
 
 /**
@@ -213,6 +232,11 @@ function StopsVanVandaag() {
     () => new Map(buurten.map((b) => [b.naam, b.volgorde])),
     [buurten]
   );
+  // Voor de Selibon-info bij de eerste stop van elke wijk.
+  const buurtPerNaam = useMemo(
+    () => new Map(buurten.map((b) => [b.naam, b])),
+    [buurten]
+  );
   const route = useMemo(() => {
     const lijst = [...(stops ?? [])];
     lijst.sort((a, b) => {
@@ -338,6 +362,13 @@ function StopsVanVandaag() {
               `${stop.klant.adres}, Bonaire`
             )}`;
             const klaar = stop.fase === "gedaan" || stop.fase === "overgeslagen";
+            // Selibon-info alleen bij de eerste stop van een wijk (de route
+            // is op wijk gesorteerd), zodat de lijst rustig blijft.
+            const eersteVanWijk =
+              idx === 0 || route[idx - 1].klant.wijk !== stop.klant.wijk;
+            const selibon = eersteVanWijk
+              ? selibonTekst(buurtPerNaam.get(stop.klant.wijk), t)
+              : null;
             return (
               <li
                 key={stop.abo.id}
@@ -368,6 +399,11 @@ function StopsVanVandaag() {
                         {stop.klant.wijk} &middot; {stop.klant.aantalKlikos}{" "}
                         {t("beheer.klikos")}
                       </p>
+                      {selibon && (
+                        <p className="mt-0.5 text-xs font-semibold text-kliko-navy/45">
+                          {selibon}
+                        </p>
+                      )}
                     </div>
                   </div>
                   {stop.fase === "gedaan" && (

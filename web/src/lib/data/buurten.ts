@@ -14,11 +14,22 @@ import {
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
 
+/** Dagdeel waarop Selibon (de afvalophaaldienst) in een buurt ophaalt. */
+export type SelibonDagdeel = "ochtend" | "middag";
+
 export interface Buurt {
   id: string;
   naam: string;
   actief: boolean;
   volgorde: number;
+  /**
+   * Weekdag waarop Selibon het afval in deze buurt ophaalt:
+   * 1 = maandag .. 7 = zondag. Leeg/null = onbekend.
+   * (Bewust breder dan `Weekdag` uit types.ts, die stopt bij zaterdag.)
+   */
+  selibonDag?: number | null;
+  /** Dagdeel van de Selibon-ophaling. Leeg/null = onbekend. */
+  selibonDagdeel?: SelibonDagdeel | null;
 }
 
 const BUURTEN = "buurten";
@@ -70,7 +81,12 @@ export async function listActieveBuurten(): Promise<Buurt[]> {
 export async function createBuurt(
   data: Omit<Buurt, "id">
 ): Promise<string> {
-  const ref = await addDoc(collection(getDb(), BUURTEN), data);
+  // Firestore accepteert geen `undefined`-waarden: optionele Selibon-velden
+  // die niet zijn ingevuld laten we weg uit het document.
+  const schoon = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  );
+  const ref = await addDoc(collection(getDb(), BUURTEN), schoon);
   return ref.id;
 }
 
@@ -78,13 +94,63 @@ export async function updateBuurt(
   id: string,
   data: Partial<Omit<Buurt, "id">>
 ): Promise<void> {
-  await updateDoc(doc(getDb(), BUURTEN, id), data);
+  // "Onbekend" maken doe je met `null` (Firestore kent geen `undefined`).
+  const schoon = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  );
+  await updateDoc(doc(getDb(), BUURTEN, id), schoon);
 }
 
 export async function deleteBuurt(id: string): Promise<void> {
   // Klanten met deze buurt houden gewoon hun (tekst)waarde in `klant.wijk`;
   // de dropdowns tonen die waarde backwards-compatible als extra optie.
   await deleteDoc(doc(getDb(), BUURTEN, id));
+}
+
+/**
+ * Eenmalige opruimactie voor de oude dubbele seed: groepeert alle buurten op
+ * naam, houdt per naam de buurt met de LAAGSTE volgorde (bij gelijke volgorde
+ * de eerste) en verwijdert de rest. Heeft de te-behouden buurt geen
+ * Selibon-info maar een duplicaat wel, dan wordt die waarde eerst overgenomen
+ * (merge) zodat er geen ingevulde data verloren gaat.
+ * Geeft terug hoeveel dubbele er verwijderd zijn.
+ */
+export async function verwijderDubbeleBuurten(): Promise<number> {
+  const alle = await listBuurten(); // gesorteerd op volgorde asc
+  const db = getDb();
+  const batch = writeBatch(db);
+
+  // listBuurten is oplopend op volgorde gesorteerd: de eerste per naam is
+  // dus automatisch de laagste volgorde (en bij gelijke volgorde de eerste).
+  const behouden = new Map<string, Buurt>();
+  let verwijderd = 0;
+
+  for (const buurt of alle) {
+    const keeper = behouden.get(buurt.naam);
+    if (!keeper) {
+      behouden.set(buurt.naam, buurt);
+      continue;
+    }
+    // Merge: Selibon-velden van het duplicaat overnemen als de keeper ze
+    // nog niet heeft ingevuld.
+    const merge: Partial<Omit<Buurt, "id">> = {};
+    if (keeper.selibonDag == null && buurt.selibonDag != null) {
+      merge.selibonDag = buurt.selibonDag;
+      keeper.selibonDag = buurt.selibonDag;
+    }
+    if (keeper.selibonDagdeel == null && buurt.selibonDagdeel != null) {
+      merge.selibonDagdeel = buurt.selibonDagdeel;
+      keeper.selibonDagdeel = buurt.selibonDagdeel;
+    }
+    if (Object.keys(merge).length > 0) {
+      batch.update(doc(db, BUURTEN, keeper.id), merge);
+    }
+    batch.delete(doc(db, BUURTEN, buurt.id));
+    verwijderd++;
+  }
+
+  if (verwijderd > 0) await batch.commit();
+  return verwijderd;
 }
 
 /**

@@ -282,6 +282,19 @@ const pap: Dict = {
     "Kita e bario aki for di e lista? Klientenan eksistente ta keda ku e nòmber.",
   "buurten.omhoog": "Move ariba",
   "buurten.omlaag": "Move abou",
+  // Dubbele buurten + Selibon-ophaaldag. LET OP: Papiamentu laten nakijken door Roderick.
+  "buurten.dubbel.btn": "Kita doblenan",
+  "buurten.dubbel.confirm":
+    "Kita e barionan dòbel? Pa kada nòmber e promé den e lista ta keda; informashon di Selibon ta keda wardá.",
+  "buurten.dubbel.klaar": "dòbel kitá",
+  "buurten.dubbel.geen": "No a haña bario dòbel.",
+  "buurten.selibon.dag": "Dia di Selibon",
+  "buurten.selibon.dagdeel": "Parti di dia",
+  "selibon.label": "Selibon",
+  "selibon.onbekend": "Deskonosí",
+  "dag.7": "Djadumingu",
+  "dagdeel.ochtend": "mainta",
+  "dagdeel.middag": "atardi",
   "shell.instellingen": "Konfigurashon",
   "inst.title": "Konfigurashon",
   "inst.sub":
@@ -785,6 +798,19 @@ const nl: Dict = {
     "Deze buurt uit de lijst verwijderen? Bestaande klanten houden de naam gewoon.",
   "buurten.omhoog": "Omhoog",
   "buurten.omlaag": "Omlaag",
+  // Dubbele buurten + Selibon-ophaaldag.
+  "buurten.dubbel.btn": "Verwijder dubbele",
+  "buurten.dubbel.confirm":
+    "Dubbele buurten verwijderen? Per naam blijft de eerste in de lijst staan; ingevulde Selibon-info blijft bewaard.",
+  "buurten.dubbel.klaar": "dubbele verwijderd",
+  "buurten.dubbel.geen": "Geen dubbele buurten gevonden.",
+  "buurten.selibon.dag": "Selibon-ophaaldag",
+  "buurten.selibon.dagdeel": "Dagdeel",
+  "selibon.label": "Selibon",
+  "selibon.onbekend": "Onbekend",
+  "dag.7": "Zondag",
+  "dagdeel.ochtend": "ochtend",
+  "dagdeel.middag": "middag",
   "shell.instellingen": "Instellingen",
   "inst.title": "Instellingen",
   "inst.sub":
@@ -1412,6 +1438,19 @@ const en: Dict = {
     "Remove this neighbourhood from the list? Existing customers keep the name.",
   "buurten.omhoog": "Move up",
   "buurten.omlaag": "Move down",
+  // Duplicate neighbourhoods + Selibon pickup day.
+  "buurten.dubbel.btn": "Remove duplicates",
+  "buurten.dubbel.confirm":
+    "Remove duplicate neighbourhoods? For each name the first one in the list is kept; any Selibon info is preserved.",
+  "buurten.dubbel.klaar": "duplicates removed",
+  "buurten.dubbel.geen": "No duplicate neighbourhoods found.",
+  "buurten.selibon.dag": "Selibon pickup day",
+  "buurten.selibon.dagdeel": "Part of day",
+  "selibon.label": "Selibon",
+  "selibon.onbekend": "Unknown",
+  "dag.7": "Sunday",
+  "dagdeel.ochtend": "morning",
+  "dagdeel.middag": "afternoon",
   "shell.instellingen": "Settings",
   "inst.title": "Settings",
   "inst.sub":
