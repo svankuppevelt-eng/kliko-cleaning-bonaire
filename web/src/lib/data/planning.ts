@@ -35,21 +35,31 @@ export function dagenTussen(vanIso: string, totIso: string): number {
 }
 
 /**
+ * Het hoeveelste voorkomen van deze weekdag binnen de maand valt op deze datum?
+ * 1 t/m 5. (Dag 1-7 = 1e keer, 8-14 = 2e, ... 29-31 = 5e keer.)
+ */
+export function weekdagVoorkomenInMaand(datum: Date): number {
+  return Math.floor((datum.getDate() - 1) / 7) + 1;
+}
+
+/**
  * Is dit abonnement vandaag aan de beurt?
  * - alleen actieve abonnementen met een vasteDag gelijk aan vandaag;
- * - en op basis van de frequentie genoeg dagen sinds laatsteReiniging:
- *   frequentie 4 = wekelijks (>= 6 dagen, zodat dezelfde weekdag elke week matcht),
- *   frequentie 2 = om de ~2 weken (>= 13 dagen),
- *   frequentie 1 = maandelijks (>= 27 dagen).
- * - geen laatsteReiniging = nog nooit gereinigd = due.
+ * - de frequentie bepaalt op welke voorkomens van die vaste weekdag we komen:
+ *   frequentie 1 = alleen het 1e voorkomen van de maand,
+ *   frequentie 2 = het 1e en 3e voorkomen,
+ *   frequentie 4 = het 1e t/m 4e voorkomen.
+ * We houden strikt aan 4x per maand: in een maand met 5 van die weekdag slaan
+ * we het 5e voorkomen over (dus 4x per maand is bewust NIET hetzelfde als
+ * wekelijks). De inplanning is puur op de kalender, niet op laatsteReiniging.
  */
 export function isVandaagDue(abonnement: Abonnement, vandaag: Date): boolean {
   if (abonnement.status !== "actief") return false;
   if (!abonnement.vasteDag) return false;
   if (abonnement.vasteDag !== weekdagVanDatum(vandaag)) return false;
-  if (!abonnement.laatsteReiniging) return true;
-  const dagen = dagenTussen(abonnement.laatsteReiniging, isoDatum(vandaag));
-  const minimaal =
-    abonnement.frequentie === 4 ? 6 : abonnement.frequentie === 2 ? 13 : 27;
-  return dagen >= minimaal;
+  const voorkomen = weekdagVoorkomenInMaand(vandaag);
+  if (abonnement.frequentie === 1) return voorkomen === 1;
+  if (abonnement.frequentie === 2) return voorkomen === 1 || voorkomen === 3;
+  // frequentie 4: eerste vier voorkomens; het 5e slaan we over.
+  return voorkomen <= 4;
 }

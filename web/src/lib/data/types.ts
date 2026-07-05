@@ -3,7 +3,9 @@
 
 export type KlantType = "huishouden" | "bedrijf";
 
-/** Aantal schoonmaakbeurten per maand. 4 = wekelijks. */
+/** Aantal schoonmaakbeurten per maand (1, 2 of 4). 4x per maand is bewust
+ * niet hetzelfde als wekelijks: in maanden met 5 van de vaste weekdag blijft
+ * het bij 4 beurten. */
 export type Frequentie = 1 | 2 | 4;
 
 export type AbonnementStatus = "actief" | "pauze" | "gestopt";

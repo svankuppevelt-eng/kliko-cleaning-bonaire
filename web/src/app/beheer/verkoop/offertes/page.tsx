@@ -23,7 +23,7 @@ const TYPE_LABEL: Record<KlantType, string> = {
 const FREQ_LABEL: Record<Frequentie, string> = {
   1: "1x per maand",
   2: "2x per maand",
-  4: "4x per maand (wekelijks)",
+  4: "4x per maand",
 };
 
 const selectCls =
