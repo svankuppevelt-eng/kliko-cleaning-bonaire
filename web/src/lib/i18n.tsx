@@ -44,11 +44,13 @@ const pap: Dict = {
   "price.home": "Kas",
   "price.biz": "Negoshi",
   "price.month": "/luna",
+  // Jaarprijs-regel op de landing. LET OP: Papiamentu laten nakijken door Roderick.
+  "price.year": "òf ${prijs} pa aña (mas ekonómiko)",
   "price.f1": "1 biaha pa luna",
   "price.f2": "2 biaha pa luna",
   "price.f4": "Kada siman",
   "price.cta": "Skohe esaki",
-  "price.note": "Preisnan di ehèmpel, tarifa definitivo ta bin.",
+  "price.note": "Tur preis na dòler merikano (USD), pa kliko.",
   "cta.title": "Kla pa un kliko fresku?",
   "cta.sub": "Registrá awe i bo kliko ta limpi e siman ku ta bin.",
   "cta.btn": "Registrá awor",
@@ -60,6 +62,7 @@ const pap: Dict = {
   "signup.type": "Tipo di kliente",
   "signup.freq": "Kuantu biaha pa luna?",
   "signup.price": "Bo preis",
+  "signup.korting": "{pct}% deskuento pa mas kliko",
   "form.naam": "Nòmber",
   "form.email": "Adrès di e-mail",
   "form.telefoon": "Telefòn / WhatsApp",
@@ -239,6 +242,8 @@ const pap: Dict = {
   "nieuw.gegevens": "Datos di kliente",
   "nieuw.prijs.hint":
     "E preis ta bin outomátikamente for di e tabla di tarifa. Bo por kambia e manualmente.",
+  "nieuw.prijs.korting":
+    "Ku {pct}% deskuento pa mas kontener (preis di base {basis}).",
   "nieuw.submit": "Krea kliente",
   "nieuw.err.save": "No por a krea e kliente. Purba atrobe.",
   "form.buurt.kies": "Skohe un bario",
@@ -284,10 +289,32 @@ const pap: Dict = {
   "buurten.omlaag": "Move abou",
   "shell.instellingen": "Konfigurashon",
   "inst.title": "Konfigurashon",
+  // Instellingen = alle prijsafspraken op 1 plek.
+  // LET OP: Papiamentu laten nakijken door Roderick.
   "inst.sub":
-    "Tarifa i kapasidat. Kambionan ta konta mesora pa e wèpsait i e formularionan.",
+    "Tur akuerdo di preis i e kapasidat na 1 lugá. Kambionan ta konta mesora pa e wèpsait, e formularionan i e hèrmènt di oferta.",
   "inst.loading": "Ta karga...",
-  "inst.prijzen": "Tarifa pa luna (dòler)",
+  "inst.prijzen": "Tarifa pa abono (dòler)",
+  "inst.prijzen.hint":
+    "Pa kada frekuensia un preis pa luna i un preis pa aña (12 luna den 1 pago, ku deskuento).",
+  "inst.prijs.maand": "Pa luna",
+  "inst.prijs.jaar": "Pa aña (1 pago)",
+  "inst.prijs.maal12": "12x e preis pa luna",
+  "inst.korting": "Deskuento pa mas kontener",
+  "inst.korting.hint":
+    "For di un kantidat di kontener un porsentahe di deskuento ta konta riba e preis pa luna. E porsentahe aplikabel mas haltu ta konta.",
+  "inst.korting.leeg":
+    "No tin regla di deskuento ainda. Agregá un regla pa duna deskuento pa mas kontener.",
+  "inst.korting.toevoegen": "+ Regla",
+  "inst.korting.verwijderen": "Kita",
+  "inst.korting.vanaf": "For di kantidat di kontener",
+  "inst.korting.pct": "Deskuento",
+  "inst.korting.fout":
+    "Regla di deskuento: kantidat mínimo 2 i deskuento entre 1 i 100%.",
+  "inst.cadeaus": "Regalo di oferta",
+  "inst.cadeaus.hint": "E hèrmènt di oferta bou di Venta ta usa e tekstonan aki.",
+  "inst.cadeau.welkom": "Regalo di bienvenida (tur hende)",
+  "inst.cadeau.jaar": "Regalo pa kontrakt di aña",
   "inst.capaciteit": "Kapasidat pa dia",
   "inst.capaciteit.hint":
     "Kantidat máksimo di kliko ku e tim por hasi limpi riba 1 dia.",
@@ -548,11 +575,12 @@ const nl: Dict = {
   "price.home": "Huishouden",
   "price.biz": "Bedrijf",
   "price.month": "/maand",
+  "price.year": "of ${prijs} per jaar (voordeliger)",
   "price.f1": "1× per maand",
   "price.f2": "2× per maand",
   "price.f4": "Wekelijks",
   "price.cta": "Kies dit",
-  "price.note": "Voorbeeldprijzen, definitieve tarieven volgen.",
+  "price.note": "Alle prijzen in US dollars (USD), per kliko.",
   "cta.title": "Klaar voor een frisse kliko?",
   "cta.sub": "Meld je vandaag aan en je kliko is volgende week schoon.",
   "cta.btn": "Nu aanmelden",
@@ -563,6 +591,7 @@ const nl: Dict = {
   "signup.type": "Type klant",
   "signup.freq": "Hoe vaak per maand?",
   "signup.price": "Jouw prijs",
+  "signup.korting": "{pct}% korting bij meerdere kliko's",
   "form.naam": "Naam",
   "form.email": "E-mailadres",
   "form.telefoon": "Telefoon / WhatsApp",
@@ -742,6 +771,8 @@ const nl: Dict = {
   "nieuw.gegevens": "Klantgegevens",
   "nieuw.prijs.hint":
     "De prijs komt automatisch uit de prijstabel. Je kunt hem handmatig aanpassen.",
+  "nieuw.prijs.korting":
+    "Met {pct}% containerkorting (basisprijs {basis}).",
   "nieuw.submit": "Klant aanmaken",
   "nieuw.err.save": "De klant aanmaken is niet gelukt. Probeer het opnieuw.",
   "form.buurt.kies": "Kies een wijk",
@@ -788,9 +819,29 @@ const nl: Dict = {
   "shell.instellingen": "Instellingen",
   "inst.title": "Instellingen",
   "inst.sub":
-    "Tarieven en capaciteit. Wijzigingen gelden meteen voor de website en de formulieren.",
+    "Alle prijsafspraken en de capaciteit op 1 plek. Wijzigingen gelden meteen voor de website, de formulieren en de offerte-tool.",
   "inst.loading": "Laden...",
-  "inst.prijzen": "Prijzen per maand (dollar)",
+  "inst.prijzen": "Tarieven per abonnement (dollar)",
+  "inst.prijzen.hint":
+    "Per frequentie een maandprijs en een jaarprijs (12 maanden in 1 betaling, met korting).",
+  "inst.prijs.maand": "Per maand",
+  "inst.prijs.jaar": "Per jaar (1 betaling)",
+  "inst.prijs.maal12": "12x de maandprijs",
+  "inst.korting": "Korting bij meerdere containers",
+  "inst.korting.hint":
+    "Vanaf een aantal containers geldt een kortingspercentage op de maandprijs. Het hoogste toepasselijke percentage telt.",
+  "inst.korting.leeg":
+    "Nog geen kortingsregels. Voeg een regel toe om korting te geven bij meerdere containers.",
+  "inst.korting.toevoegen": "+ Regel",
+  "inst.korting.verwijderen": "Verwijderen",
+  "inst.korting.vanaf": "Vanaf aantal containers",
+  "inst.korting.pct": "Korting",
+  "inst.korting.fout":
+    "Kortingsregels: vanaf-aantal minimaal 2 en korting tussen 1 en 100%.",
+  "inst.cadeaus": "Offerte-cadeaus",
+  "inst.cadeaus.hint": "De offerte-tool onder Verkoop gebruikt deze teksten.",
+  "inst.cadeau.welkom": "Welkomstcadeau (iedereen)",
+  "inst.cadeau.jaar": "Cadeau bij jaarcontract",
   "inst.capaciteit": "Capaciteit per dag",
   "inst.capaciteit.hint":
     "Maximaal aantal kliko's dat het team op 1 dag kan reinigen.",
@@ -840,17 +891,17 @@ const nl: Dict = {
   "fact.betaallink.note":
     "De betaallink volgt zodra de betaalprovider (Sentoo of Stripe) gekoppeld is.",
 
-  // Verkoop (office): offertes, prospects, calculator, notities, prijsbeleid.
+  // Verkoop (office): offertes, prospects, calculator, notities.
+  // Het prijsbeleid is opgegaan in Instellingen (/beheer/instellingen).
   "shell.verkoop": "Verkoop",
   "verkoop.tab.offertes": "Offertes",
   "verkoop.tab.prospects": "Prospects",
   "verkoop.tab.calculator": "Calculator",
   "verkoop.tab.notities": "Notities",
-  "verkoop.tab.prijsbeleid": "Prijsbeleid",
 
   "verkoop.off.title": "Offerte-tool",
   "verkoop.off.sub":
-    "Stel tijdens een klantbezoek snel een aanbieding samen. Prijzen komen uit de instellingen, kortingen uit het prijsbeleid.",
+    "Stel tijdens een klantbezoek snel een aanbieding samen. Prijzen, kortingen en cadeaus komen uit de Instellingen.",
   "verkoop.off.klant": "Klantgegevens",
   "verkoop.off.naam": "Naam / bedrijfsnaam",
   "verkoop.off.naamplaceholder": "(klantnaam)",
@@ -862,7 +913,9 @@ const nl: Dict = {
   "verkoop.off.verwijderen": "Verwijderen",
   "verkoop.off.aanbieding": "Aanbieding voor",
   "verkoop.off.subtotaal": "Subtotaal per maand",
-  "verkoop.off.jaarkorting": "Jaarcontractkorting",
+  "verkoop.off.containerkorting": "Containerkorting",
+  "verkoop.off.jaarvoordeel": "Voordeel jaarprijs (12 maanden vooruit)",
+  "verkoop.off.perjaareenheid": "/jaar",
   "verkoop.off.permaand": "Totaal per maand",
   "verkoop.off.perjaar": "Totaal voor 12 maanden",
   "verkoop.off.abo": "Maandelijks abonnement",
@@ -900,31 +953,6 @@ const nl: Dict = {
   "verkoop.not.bewerk": "Bewerk",
   "verkoop.not.wis": "Wis",
   "verkoop.not.fout": "Opslaan is niet gelukt. Probeer het opnieuw.",
-
-  "verkoop.pb.title": "Prijsbeleid",
-  "verkoop.pb.sub":
-    "Kortingen en cadeaus die de offerte-tool gebruikt. De basisprijzen staan bij Instellingen.",
-  "verkoop.pb.readonly":
-    "Alleen eigenaars kunnen het prijsbeleid wijzigen. Je kunt de waarden wel bekijken.",
-  "verkoop.pb.prijzen": "Huidige basisprijzen",
-  "verkoop.pb.prijzenhint": "Ingesteld bij Instellingen; hier alleen ter referentie.",
-  "verkoop.pb.laden": "Laden...",
-  "verkoop.pb.kortingen": "Kortingen bij meerdere containers",
-  "verkoop.pb.kortingenhint":
-    "Korting op elke extra container. De eerste container is altijd vol tarief.",
-  "verkoop.pb.k2": "2e container",
-  "verkoop.pb.k3": "3e container",
-  "verkoop.pb.k4": "4e container e.v.",
-  "verkoop.pb.jaarcontract": "Jaarcontract",
-  "verkoop.pb.jaarkorting": "Korting bij 12 maanden vooruit",
-  "verkoop.pb.cadeaujaar": "Cadeau bij jaarcontract",
-  "verkoop.pb.welkom": "Welkomstcadeau",
-  "verkoop.pb.cadeauwelkom": "Cadeau bij eerste afsluiting (iedereen)",
-  "verkoop.pb.foutpct": "Kortingen moeten tussen 0 en 100% liggen.",
-  "verkoop.pb.opgeslagen": "Prijsbeleid opgeslagen.",
-  "verkoop.pb.foutsave": "Opslaan is niet gelukt. Probeer het opnieuw.",
-  "verkoop.pb.bezig": "Bezig...",
-  "verkoop.pb.opslaan": "Opslaan",
 
   "verkoop.calc.title": "Rentabiliteits-calculator",
   "verkoop.calc.sub":
@@ -1177,11 +1205,12 @@ const en: Dict = {
   "price.home": "Household",
   "price.biz": "Business",
   "price.month": "/month",
+  "price.year": "or ${prijs} per year (better value)",
   "price.f1": "Once a month",
   "price.f2": "Twice a month",
   "price.f4": "Weekly",
   "price.cta": "Choose",
-  "price.note": "Example prices, final rates to follow.",
+  "price.note": "All prices in US dollars (USD), per bin.",
   "cta.title": "Ready for a fresh bin?",
   "cta.sub": "Sign up today and your bin is clean next week.",
   "cta.btn": "Sign up now",
@@ -1192,6 +1221,7 @@ const en: Dict = {
   "signup.type": "Customer type",
   "signup.freq": "How often per month?",
   "signup.price": "Your price",
+  "signup.korting": "{pct}% discount for multiple bins",
   "form.naam": "Name",
   "form.email": "Email address",
   "form.telefoon": "Phone / WhatsApp",
@@ -1369,6 +1399,8 @@ const en: Dict = {
   "nieuw.gegevens": "Customer details",
   "nieuw.prijs.hint":
     "The price is filled automatically from the price table. You can override it manually.",
+  "nieuw.prijs.korting":
+    "With {pct}% multi-container discount (base price {basis}).",
   "nieuw.submit": "Create customer",
   "nieuw.err.save": "Creating the customer failed. Please try again.",
   "form.buurt.kies": "Choose a neighbourhood",
@@ -1415,9 +1447,29 @@ const en: Dict = {
   "shell.instellingen": "Settings",
   "inst.title": "Settings",
   "inst.sub":
-    "Pricing and capacity. Changes apply immediately to the website and the forms.",
+    "All pricing agreements and the capacity in one place. Changes apply immediately to the website, the forms and the quote tool.",
   "inst.loading": "Loading...",
-  "inst.prijzen": "Monthly prices (dollars)",
+  "inst.prijzen": "Subscription rates (dollars)",
+  "inst.prijzen.hint":
+    "Per frequency a monthly price and a yearly price (12 months in 1 payment, discounted).",
+  "inst.prijs.maand": "Per month",
+  "inst.prijs.jaar": "Per year (1 payment)",
+  "inst.prijs.maal12": "12x the monthly price",
+  "inst.korting": "Multi-container discount",
+  "inst.korting.hint":
+    "From a number of containers a discount percentage applies to the monthly price. The highest applicable percentage counts.",
+  "inst.korting.leeg":
+    "No discount rules yet. Add a rule to give a discount for multiple containers.",
+  "inst.korting.toevoegen": "+ Rule",
+  "inst.korting.verwijderen": "Remove",
+  "inst.korting.vanaf": "From number of containers",
+  "inst.korting.pct": "Discount",
+  "inst.korting.fout":
+    "Discount rules: minimum count 2 and discount between 1 and 100%.",
+  "inst.cadeaus": "Quote gifts",
+  "inst.cadeaus.hint": "Used by the quote tool under Sales.",
+  "inst.cadeau.welkom": "Welcome gift (everyone)",
+  "inst.cadeau.jaar": "Gift with a yearly contract",
   "inst.capaciteit": "Capacity per day",
   "inst.capaciteit.hint":
     "Maximum number of bins the team can clean in 1 day.",

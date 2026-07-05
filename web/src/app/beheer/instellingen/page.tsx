@@ -1,7 +1,10 @@
 "use client";
 
-// Office: prijstabel + dagcapaciteit bewerken (Firestore-doc instellingen/algemeen).
-// Alleen rol "eigenaar" mag wijzigen; rol "kantoor" ziet de waarden read-only.
+// Office: ALLE prijsafspraken op 1 plek (Firestore-doc instellingen/algemeen):
+// per tier de maand- en jaarprijs, de container-korting (drempels + percentage),
+// de offerte-cadeaus en de dagcapaciteit. Het oude aparte "Prijsbeleid" onder
+// Verkoop is hierin opgegaan. Alleen rol "eigenaar" mag wijzigen; rol
+// "kantoor" ziet de waarden read-only.
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { isFirebaseConfigured } from "@/lib/firebase";
@@ -11,7 +14,7 @@ import {
   saveInstellingen,
   type Instellingen,
 } from "@/lib/data/instellingen";
-import { FREQUENTIES } from "@/lib/data/prijzen";
+import { FREQUENTIES, formatUsd } from "@/lib/data/prijzen";
 import type { Frequentie, KlantType } from "@/lib/data/types";
 
 const FREQ_LABEL: Record<Frequentie, string> = {
@@ -27,20 +30,44 @@ const TYPES: { type: KlantType; label: string }[] = [
 
 const inputCls =
   "w-full rounded-xl border border-kliko-navy/20 bg-white px-3 py-2.5 text-base tabular-nums text-kliko-navy focus:border-kliko-blue focus:outline-none focus:ring-2 focus:ring-kliko-blue/30 disabled:bg-kliko-navy/5 disabled:text-kliko-navy/60";
+const smallInputCls =
+  "w-full rounded-xl border border-kliko-navy/20 bg-white px-3 py-2 text-sm tabular-nums text-kliko-navy focus:border-kliko-blue focus:outline-none focus:ring-2 focus:ring-kliko-blue/30 disabled:bg-kliko-navy/5 disabled:text-kliko-navy/60";
 
 /** Formulier-state als strings, zodat tussenstanden tijdens typen niet breken. */
+interface KortingRij {
+  vanafAantal: string;
+  kortingPct: string;
+}
+
 interface FormState {
-  prijzen: Record<KlantType, Record<Frequentie, string>>;
+  prijzen: Record<KlantType, Record<Frequentie, { maand: string; jaar: string }>>;
+  containerKorting: KortingRij[];
+  cadeauWelkom: string;
+  cadeauJaarcontract: string;
   containersPerDag: string;
 }
 
 function naarForm(inst: Instellingen): FormState {
   const prijzen = {} as FormState["prijzen"];
   for (const { type } of TYPES) {
-    prijzen[type] = {} as Record<Frequentie, string>;
-    for (const f of FREQUENTIES) prijzen[type][f] = String(inst.prijzen[type][f]);
+    prijzen[type] = {} as FormState["prijzen"][KlantType];
+    for (const f of FREQUENTIES) {
+      prijzen[type][f] = {
+        maand: String(inst.prijzen[type][f].maand),
+        jaar: String(inst.prijzen[type][f].jaar),
+      };
+    }
   }
-  return { prijzen, containersPerDag: String(inst.containersPerDag) };
+  return {
+    prijzen,
+    containerKorting: inst.containerKorting.map((r) => ({
+      vanafAantal: String(r.vanafAantal),
+      kortingPct: String(r.kortingPct),
+    })),
+    cadeauWelkom: inst.cadeauWelkom,
+    cadeauJaarcontract: inst.cadeauJaarcontract,
+    containersPerDag: String(inst.containersPerDag),
+  };
 }
 
 export default function InstellingenPage() {
@@ -57,15 +84,61 @@ export default function InstellingenPage() {
     getInstellingen().then((inst) => setForm(naarForm(inst)));
   }, []);
 
-  function zetPrijs(type: KlantType, f: Frequentie, waarde: string) {
+  function zetPrijs(
+    type: KlantType,
+    f: Frequentie,
+    veld: "maand" | "jaar",
+    waarde: string
+  ) {
     setForm((huidig) =>
       huidig
         ? {
             ...huidig,
             prijzen: {
               ...huidig.prijzen,
-              [type]: { ...huidig.prijzen[type], [f]: waarde },
+              [type]: {
+                ...huidig.prijzen[type],
+                [f]: { ...huidig.prijzen[type][f], [veld]: waarde },
+              },
             },
+          }
+        : huidig
+    );
+  }
+
+  function zetKorting(idx: number, veld: keyof KortingRij, waarde: string) {
+    setForm((huidig) =>
+      huidig
+        ? {
+            ...huidig,
+            containerKorting: huidig.containerKorting.map((r, i) =>
+              i === idx ? { ...r, [veld]: waarde } : r
+            ),
+          }
+        : huidig
+    );
+  }
+
+  function voegKortingToe() {
+    setForm((huidig) =>
+      huidig
+        ? {
+            ...huidig,
+            containerKorting: [
+              ...huidig.containerKorting,
+              { vanafAantal: "2", kortingPct: "10" },
+            ],
+          }
+        : huidig
+    );
+  }
+
+  function verwijderKorting(idx: number) {
+    setForm((huidig) =>
+      huidig
+        ? {
+            ...huidig,
+            containerKorting: huidig.containerKorting.filter((_, i) => i !== idx),
           }
         : huidig
     );
@@ -76,24 +149,59 @@ export default function InstellingenPage() {
     if (!form || busy || !isEigenaar) return;
     setMelding(null);
 
-    // Valideer: alle velden positieve getallen.
+    // Valideer: alle prijzen en de capaciteit positieve getallen.
     const inst: Instellingen = {
-      prijzen: { huishouden: { 1: 0, 2: 0, 4: 0 }, bedrijf: { 1: 0, 2: 0, 4: 0 } },
+      prijzen: {
+        huishouden: {
+          1: { maand: 0, jaar: 0 },
+          2: { maand: 0, jaar: 0 },
+          4: { maand: 0, jaar: 0 },
+        },
+        bedrijf: {
+          1: { maand: 0, jaar: 0 },
+          2: { maand: 0, jaar: 0 },
+          4: { maand: 0, jaar: 0 },
+        },
+      },
+      containerKorting: [],
+      cadeauWelkom: form.cadeauWelkom.trim(),
+      cadeauJaarcontract: form.cadeauJaarcontract.trim(),
       containersPerDag: Number(form.containersPerDag),
     };
     let geldig =
       Number.isFinite(inst.containersPerDag) && inst.containersPerDag > 0;
     for (const { type } of TYPES) {
       for (const f of FREQUENTIES) {
-        const n = Number(form.prijzen[type][f]);
-        if (!Number.isFinite(n) || n <= 0) geldig = false;
-        inst.prijzen[type][f] = n;
+        const maand = Number(form.prijzen[type][f].maand);
+        const jaar = Number(form.prijzen[type][f].jaar);
+        if (!Number.isFinite(maand) || maand <= 0) geldig = false;
+        if (!Number.isFinite(jaar) || jaar <= 0) geldig = false;
+        inst.prijzen[type][f] = { maand, jaar };
       }
     }
     if (!geldig) {
       setMelding({ tekst: t("form.err.required"), fout: true });
       return;
     }
+
+    // Valideer de kortingsregels: vanaf-aantal >= 2, percentage 1-100.
+    for (const rij of form.containerKorting) {
+      const vanafAantal = Number(rij.vanafAantal);
+      const kortingPct = Number(rij.kortingPct);
+      if (
+        !Number.isInteger(vanafAantal) ||
+        vanafAantal < 2 ||
+        !Number.isFinite(kortingPct) ||
+        kortingPct <= 0 ||
+        kortingPct > 100
+      ) {
+        setMelding({ tekst: t("inst.korting.fout"), fout: true });
+        return;
+      }
+      inst.containerKorting.push({ vanafAantal, kortingPct });
+    }
+    inst.containerKorting.sort((a, b) => a.vanafAantal - b.vanafAantal);
+
     if (!isFirebaseConfigured()) {
       setMelding({ tekst: t("login.offline"), fout: true });
       return;
@@ -111,7 +219,7 @@ export default function InstellingenPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-black tracking-tight text-kliko-navy sm:text-3xl">
         {t("inst.title")}
       </h1>
@@ -129,43 +237,225 @@ export default function InstellingenPage() {
         </p>
       ) : (
         <form onSubmit={opslaan} className="mt-6 flex flex-col gap-5">
-          {/* Prijstabel */}
+          {/* Prijstabel: per tier maand + jaar */}
           <section className="rounded-2xl border border-kliko-navy/10 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
               {t("inst.prijzen")}
             </h2>
-            <div className="mt-4 grid gap-6 sm:grid-cols-2">
+            <p className="mt-1 text-xs text-kliko-navy/50">{t("inst.prijzen.hint")}</p>
+            <div className="mt-4 flex flex-col gap-6">
               {TYPES.map(({ type, label }) => (
                 <div key={type}>
                   <h3 className="font-bold text-kliko-navy">{t(label)}</h3>
                   <div className="mt-2 flex flex-col gap-3">
-                    {FREQUENTIES.map((f) => (
-                      <div key={f}>
-                        <label
-                          htmlFor={`prijs-${type}-${f}`}
-                          className="mb-1 block text-xs font-bold text-kliko-navy/60"
+                    {FREQUENTIES.map((f) => {
+                      const maandNum = Number(form.prijzen[type][f].maand);
+                      const maalTwaalf = Number.isFinite(maandNum) && maandNum > 0
+                        ? maandNum * 12
+                        : null;
+                      return (
+                        <div
+                          key={f}
+                          className="rounded-xl border border-kliko-navy/10 bg-kliko-navy/[0.02] p-3"
                         >
-                          {t(FREQ_LABEL[f])}
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-kliko-navy/50">$</span>
-                          <input
-                            id={`prijs-${type}-${f}`}
-                            type="number"
-                            min={1}
-                            step="0.01"
-                            inputMode="decimal"
-                            disabled={!isEigenaar}
-                            className={inputCls}
-                            value={form.prijzen[type][f]}
-                            onChange={(e) => zetPrijs(type, f, e.target.value)}
-                          />
+                          <span className="text-xs font-bold text-kliko-navy/60">
+                            {t(FREQ_LABEL[f])}
+                          </span>
+                          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <label
+                                htmlFor={`prijs-${type}-${f}-maand`}
+                                className="mb-1 block text-xs font-semibold text-kliko-navy/50"
+                              >
+                                {t("inst.prijs.maand")}
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-kliko-navy/50">$</span>
+                                <input
+                                  id={`prijs-${type}-${f}-maand`}
+                                  type="number"
+                                  min={1}
+                                  step="0.01"
+                                  inputMode="decimal"
+                                  disabled={!isEigenaar}
+                                  className={inputCls}
+                                  value={form.prijzen[type][f].maand}
+                                  onChange={(e) =>
+                                    zetPrijs(type, f, "maand", e.target.value)
+                                  }
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label
+                                htmlFor={`prijs-${type}-${f}-jaar`}
+                                className="mb-1 block text-xs font-semibold text-kliko-navy/50"
+                              >
+                                {t("inst.prijs.jaar")}
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-kliko-navy/50">$</span>
+                                <input
+                                  id={`prijs-${type}-${f}-jaar`}
+                                  type="number"
+                                  min={1}
+                                  step="0.01"
+                                  inputMode="decimal"
+                                  disabled={!isEigenaar}
+                                  className={inputCls}
+                                  value={form.prijzen[type][f].jaar}
+                                  onChange={(e) =>
+                                    zetPrijs(type, f, "jaar", e.target.value)
+                                  }
+                                />
+                              </div>
+                              {/* Puur informatief: maand x 12, zodat de korting
+                                  van de jaarprijs zichtbaar is. Wordt niet opgeslagen. */}
+                              {maalTwaalf !== null && (
+                                <p className="mt-1 text-xs tabular-nums text-kliko-navy/50">
+                                  {t("inst.prijs.maal12")}: {formatUsd(maalTwaalf)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* Container-korting */}
+          <section className="rounded-2xl border border-kliko-navy/10 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
+                {t("inst.korting")}
+              </h2>
+              {isEigenaar && (
+                <button
+                  type="button"
+                  onClick={voegKortingToe}
+                  className="rounded-full bg-kliko-navy px-3.5 py-1.5 text-xs font-bold text-white hover:bg-kliko-navy/90"
+                >
+                  {t("inst.korting.toevoegen")}
+                </button>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-kliko-navy/50">{t("inst.korting.hint")}</p>
+
+            {form.containerKorting.length === 0 ? (
+              <p className="mt-3 rounded-xl bg-kliko-navy/[0.03] px-4 py-3 text-sm font-semibold text-kliko-navy/50">
+                {t("inst.korting.leeg")}
+              </p>
+            ) : (
+              <div className="mt-3 flex flex-col gap-2">
+                {form.containerKorting.map((rij, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-[1fr_1fr_auto] items-end gap-2 rounded-xl border border-kliko-navy/10 bg-kliko-navy/[0.02] p-3"
+                  >
+                    <div>
+                      <label
+                        htmlFor={`korting-${idx}-vanaf`}
+                        className="mb-1 block text-xs font-semibold text-kliko-navy/50"
+                      >
+                        {t("inst.korting.vanaf")}
+                      </label>
+                      <input
+                        id={`korting-${idx}-vanaf`}
+                        type="number"
+                        min={2}
+                        step="1"
+                        inputMode="numeric"
+                        disabled={!isEigenaar}
+                        className={smallInputCls}
+                        value={rij.vanafAantal}
+                        onChange={(e) => zetKorting(idx, "vanafAantal", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`korting-${idx}-pct`}
+                        className="mb-1 block text-xs font-semibold text-kliko-navy/50"
+                      >
+                        {t("inst.korting.pct")}
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          id={`korting-${idx}-pct`}
+                          type="number"
+                          min={1}
+                          max={100}
+                          step="1"
+                          inputMode="numeric"
+                          disabled={!isEigenaar}
+                          className={smallInputCls}
+                          value={rij.kortingPct}
+                          onChange={(e) => zetKorting(idx, "kortingPct", e.target.value)}
+                        />
+                        <span className="font-bold text-kliko-navy/50">%</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => verwijderKorting(idx)}
+                      disabled={!isEigenaar}
+                      aria-label={t("inst.korting.verwijderen")}
+                      className="mb-1 rounded-full px-2.5 py-1 text-sm font-bold text-kliko-red hover:bg-kliko-red/10 disabled:cursor-not-allowed disabled:text-kliko-navy/20"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Offerte-cadeaus (voorheen onder Verkoop > Prijsbeleid) */}
+          <section className="rounded-2xl border border-kliko-navy/10 bg-white p-5 shadow-sm sm:p-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-kliko-blue">
+              {t("inst.cadeaus")}
+            </h2>
+            <p className="mt-1 text-xs text-kliko-navy/50">{t("inst.cadeaus.hint")}</p>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="cadeau-welkom"
+                  className="mb-1 block text-xs font-bold text-kliko-navy/60"
+                >
+                  {t("inst.cadeau.welkom")}
+                </label>
+                <input
+                  id="cadeau-welkom"
+                  disabled={!isEigenaar}
+                  className={smallInputCls}
+                  value={form.cadeauWelkom}
+                  onChange={(e) =>
+                    setForm((h) => (h ? { ...h, cadeauWelkom: e.target.value } : h))
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="cadeau-jaar"
+                  className="mb-1 block text-xs font-bold text-kliko-navy/60"
+                >
+                  {t("inst.cadeau.jaar")}
+                </label>
+                <input
+                  id="cadeau-jaar"
+                  disabled={!isEigenaar}
+                  className={smallInputCls}
+                  value={form.cadeauJaarcontract}
+                  onChange={(e) =>
+                    setForm((h) =>
+                      h ? { ...h, cadeauJaarcontract: e.target.value } : h
+                    )
+                  }
+                />
+              </div>
             </div>
           </section>
 

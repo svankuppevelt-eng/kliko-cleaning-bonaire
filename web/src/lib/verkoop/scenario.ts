@@ -13,6 +13,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
+import { PRIJS_PER_MAAND } from "@/lib/data/prijzen";
 import type { Frequentie, KlantType } from "@/lib/data/types";
 
 /** Prijs (USD/mnd) en aantal klanten per klanttype x frequentie. */
@@ -59,8 +60,9 @@ export function nieuwScenario(naam: string): Omit<Scenario, "id"> {
     containersPerDag: 60,
     werkdagenPerMaand: 20,
     prijzen: {
-      huishouden: { 1: 10, 2: 18, 4: 22 },
-      bedrijf: { 1: 18, 2: 30, 4: 36 },
+      // Startwaarden = de echte standaard-maandtarieven uit prijzen.ts.
+      huishouden: { ...PRIJS_PER_MAAND.huishouden },
+      bedrijf: { ...PRIJS_PER_MAAND.bedrijf },
     },
     klanten: {
       huishouden: { 1: 0, 2: 0, 4: 0 },

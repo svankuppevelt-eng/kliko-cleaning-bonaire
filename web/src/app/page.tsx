@@ -13,21 +13,23 @@ export default function Home() {
   // constanten als fallback zolang het doc er niet is of Firestore stil is.
   const { instellingen } = useInstellingen();
 
+  // Per frequentie de maandprijs (hoofdprijs) en de jaarprijs (12 maanden in
+  // 1 betaling, voordeliger) uit de office-instellingen.
   const plans = [
     {
       key: "home",
       freqs: [
-        { f: "price.f1", p: instellingen.prijzen.huishouden[1] },
-        { f: "price.f2", p: instellingen.prijzen.huishouden[2] },
-        { f: "price.f4", p: instellingen.prijzen.huishouden[4] },
+        { f: "price.f1", p: instellingen.prijzen.huishouden[1].maand, j: instellingen.prijzen.huishouden[1].jaar },
+        { f: "price.f2", p: instellingen.prijzen.huishouden[2].maand, j: instellingen.prijzen.huishouden[2].jaar },
+        { f: "price.f4", p: instellingen.prijzen.huishouden[4].maand, j: instellingen.prijzen.huishouden[4].jaar },
       ],
     },
     {
       key: "biz",
       freqs: [
-        { f: "price.f1", p: instellingen.prijzen.bedrijf[1] },
-        { f: "price.f2", p: instellingen.prijzen.bedrijf[2] },
-        { f: "price.f4", p: instellingen.prijzen.bedrijf[4] },
+        { f: "price.f1", p: instellingen.prijzen.bedrijf[1].maand, j: instellingen.prijzen.bedrijf[1].jaar },
+        { f: "price.f2", p: instellingen.prijzen.bedrijf[2].maand, j: instellingen.prijzen.bedrijf[2].jaar },
+        { f: "price.f4", p: instellingen.prijzen.bedrijf[4].maand, j: instellingen.prijzen.bedrijf[4].jaar },
       ],
     },
   ];
@@ -163,6 +165,10 @@ export default function Home() {
                           ${fr.p}
                         </span>
                         <span className="text-sm text-kliko-navy/60">{t("price.month")}</span>
+                        {/* Jaarprijs: 12 maanden in 1 betaling, met korting. */}
+                        <span className="block text-xs font-semibold tabular-nums text-kliko-blue">
+                          {t("price.year").replace("{prijs}", String(fr.j))}
+                        </span>
                       </span>
                     </div>
                   ))}

@@ -1,17 +1,12 @@
 "use client";
 
 // Office: offerte-tool. Stel tijdens een klantbezoek snel een aanbieding samen
-// uit een of meer containers; prijzen komen live uit de instellingen, kortingen
-// en cadeaus uit het prijsbeleid. Overgezet uit de Streamlit-offerte-tool.
-import { useEffect, useState } from "react";
+// uit een of meer containers; alle prijsafspraken (prijzen, container-korting,
+// cadeaus) komen live uit de instellingen. Overgezet uit de Streamlit-offerte-tool.
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { VerkoopTabs } from "@/components/verkoop-tabs";
 import { useInstellingen } from "@/lib/use-instellingen";
-import {
-  DEFAULT_PRIJSBELEID,
-  getPrijsBeleid,
-  type PrijsBeleid,
-} from "@/lib/data/prijsbeleid";
 import { FREQUENTIES } from "@/lib/data/prijzen";
 import type { Frequentie, KlantType } from "@/lib/data/types";
 import {
@@ -37,7 +32,6 @@ const selectCls =
 export default function OffertesPage() {
   const { t } = useI18n();
   const { instellingen } = useInstellingen();
-  const [beleid, setBeleid] = useState<PrijsBeleid>(DEFAULT_PRIJSBELEID);
 
   const [klantnaam, setKlantnaam] = useState("");
   const [contractduur, setContractduur] = useState<Contractduur>("maandelijks");
@@ -45,16 +39,7 @@ export default function OffertesPage() {
     { type: "huishouden", frequentie: 4 },
   ]);
 
-  useEffect(() => {
-    getPrijsBeleid().then(setBeleid);
-  }, []);
-
-  const resultaat = berekenOfferte(
-    containers,
-    instellingen.prijzen,
-    beleid,
-    contractduur
-  );
+  const resultaat = berekenOfferte(containers, instellingen, contractduur);
 
   function wijzigContainer(idx: number, patch: Partial<OfferteContainer>) {
     setContainers((huidig) =>
@@ -216,7 +201,7 @@ export default function OffertesPage() {
               {r.kortingPct > 0 && (
                 <div className="flex justify-between pl-4 text-green-700">
                   <span>
-                    Korting {r.nummer}e container (-{r.kortingPct}%)
+                    {t("verkoop.off.containerkorting")} (-{r.kortingPct}%)
                   </span>
                   <span className="tabular-nums">- {usd(r.kortingBedrag)}</span>
                 </div>
@@ -224,7 +209,7 @@ export default function OffertesPage() {
             </div>
           ))}
 
-          {resultaat.jaarKortingPct > 0 && (
+          {contractduur === "jaar" && resultaat.jaarVoordeel > 0 && (
             <div className="mt-2 border-t border-kliko-navy/10 pt-2">
               <div className="flex justify-between font-semibold text-kliko-navy">
                 <span>{t("verkoop.off.subtotaal")}</span>
@@ -233,11 +218,10 @@ export default function OffertesPage() {
                 </span>
               </div>
               <div className="flex justify-between text-green-700">
-                <span>
-                  {t("verkoop.off.jaarkorting")} (-{resultaat.jaarKortingPct}%)
-                </span>
+                <span>{t("verkoop.off.jaarvoordeel")}</span>
                 <span className="tabular-nums">
-                  - {usd(resultaat.jaarKortingBedrag)}/mnd
+                  - {usd(resultaat.jaarVoordeel)}
+                  {t("verkoop.off.perjaareenheid")}
                 </span>
               </div>
             </div>

@@ -7,12 +7,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 
+// Prijsbeleid is opgegaan in Instellingen (/beheer/instellingen) en heeft
+// hier geen eigen tab meer; de oude route verwijst daarnaartoe door.
 const TABS: { href: string; key: string }[] = [
   { href: "/beheer/verkoop/offertes", key: "verkoop.tab.offertes" },
   { href: "/beheer/verkoop/prospects", key: "verkoop.tab.prospects" },
   { href: "/beheer/verkoop/calculator", key: "verkoop.tab.calculator" },
   { href: "/beheer/verkoop/notities", key: "verkoop.tab.notities" },
-  { href: "/beheer/verkoop/prijsbeleid", key: "verkoop.tab.prijsbeleid" },
 ];
 
 export function VerkoopTabs() {

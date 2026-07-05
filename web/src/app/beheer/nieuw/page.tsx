@@ -9,7 +9,12 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createAbonnement, createKlant } from "@/lib/data/klanten";
-import { FREQUENTIES, formatUsd } from "@/lib/data/prijzen";
+import {
+  FREQUENTIES,
+  formatUsd,
+  kortingPctVoorAantal,
+  prijsMetKorting,
+} from "@/lib/data/prijzen";
 import { WERKDAGEN } from "@/lib/data/planning";
 import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
@@ -64,9 +69,19 @@ export default function NieuweKlantPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Prijs beweegt automatisch mee met type/frequentie zolang hij niet
-  // handmatig is overschreven (afgeleide waarde, geen effect nodig).
-  const autoPrijs = instellingen.prijzen[type][frequentie];
+  // Prijs beweegt automatisch mee met type/frequentie/aantal kliko's zolang
+  // hij niet handmatig is overschreven (afgeleide waarde, geen effect nodig).
+  // Bij meerdere kliko's geldt de instelbare container-korting.
+  const basisPrijs = instellingen.prijzen[type][frequentie].maand;
+  const kortingPct = kortingPctVoorAantal(
+    instellingen.containerKorting,
+    Math.max(1, aantalKlikos)
+  );
+  const autoPrijs = prijsMetKorting(
+    basisPrijs,
+    Math.max(1, aantalKlikos),
+    instellingen.containerKorting
+  );
   const prijsWaarde = prijsHandmatig ? prijs : String(autoPrijs);
 
   async function submit(e: React.FormEvent) {
@@ -233,7 +248,7 @@ export default function NieuweKlantPage() {
               >
                 {FREQUENTIES.map((f) => (
                   <option key={f} value={f}>
-                    {t(FREQ_LABEL[f])} ({formatUsd(instellingen.prijzen[type][f])}{t("price.month")})
+                    {t(FREQ_LABEL[f])} ({formatUsd(instellingen.prijzen[type][f].maand)}{t("price.month")})
                   </option>
                 ))}
               </select>
@@ -254,6 +269,13 @@ export default function NieuweKlantPage() {
                 inputMode="decimal"
               />
               <p className="mt-1 text-xs text-kliko-navy/50">{t("nieuw.prijs.hint")}</p>
+              {kortingPct > 0 && !prijsHandmatig && (
+                <p className="mt-1 text-xs font-semibold text-kliko-blue">
+                  {t("nieuw.prijs.korting")
+                    .replace("{pct}", String(kortingPct))
+                    .replace("{basis}", formatUsd(basisPrijs))}
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="status" className={labelCls}>{t("abo.status")}</label>

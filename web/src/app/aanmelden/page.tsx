@@ -16,7 +16,12 @@ import {
   vulTemplate,
 } from "@/lib/data/mail-templates";
 import { mailHtml, verstuurMail } from "@/lib/mail-verzenden";
-import { FREQUENTIES, formatUsd } from "@/lib/data/prijzen";
+import {
+  FREQUENTIES,
+  formatUsd,
+  kortingPctVoorAantal,
+  prijsMetKorting,
+} from "@/lib/data/prijzen";
 import { useInstellingen } from "@/lib/use-instellingen";
 import { useActieveBuurten } from "@/lib/use-buurten";
 import { BuurtVeld } from "@/components/buurt-veld";
@@ -57,7 +62,20 @@ export default function AanmeldenPage() {
   const [error, setError] = useState<string | null>(null);
 
   const configured = useMemo(() => isFirebaseConfigured(), []);
-  const prijs = instellingen.prijzen[type][frequentie];
+  // Maandprijs voor de gekozen tier; bij meerdere kliko's geldt de instelbare
+  // container-korting uit de office-instellingen. Jaarbetaling (12 maanden in
+  // 1 keer) is hier bewust nog geen betaalwijze; dat is een logische latere
+  // uitbreiding van de aanmeldflow.
+  const basisPrijs = instellingen.prijzen[type][frequentie].maand;
+  const kortingPct = kortingPctVoorAantal(
+    instellingen.containerKorting,
+    Math.max(1, aantalKlikos)
+  );
+  const prijs = prijsMetKorting(
+    basisPrijs,
+    Math.max(1, aantalKlikos),
+    instellingen.containerKorting
+  );
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -220,19 +238,31 @@ export default function AanmeldenPage() {
                     >
                       <span className="font-bold">{t(FREQ_LABEL[f])}</span>
                       <span className={`text-sm font-semibold ${frequentie === f ? "text-white/80" : "text-kliko-navy/60"}`}>
-                        {formatUsd(instellingen.prijzen[type][f])}
+                        {formatUsd(instellingen.prijzen[type][f].maand)}
                         {t("price.month")}
                       </span>
                     </button>
                   ))}
                 </div>
 
-                <div className="mt-6 flex items-center justify-between rounded-xl bg-kliko-navy px-5 py-4">
-                  <span className="font-bold text-white">{t("signup.price")}</span>
-                  <span className="text-2xl font-black tabular-nums text-kliko-yellow">
-                    {formatUsd(prijs)}
-                    <span className="text-sm font-semibold text-white/70">{t("price.month")}</span>
-                  </span>
+                <div className="mt-6 rounded-xl bg-kliko-navy px-5 py-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-white">{t("signup.price")}</span>
+                    <span className="text-2xl font-black tabular-nums text-kliko-yellow">
+                      {kortingPct > 0 && (
+                        <span className="mr-2 text-base font-semibold text-white/50 line-through">
+                          {formatUsd(basisPrijs)}
+                        </span>
+                      )}
+                      {formatUsd(prijs)}
+                      <span className="text-sm font-semibold text-white/70">{t("price.month")}</span>
+                    </span>
+                  </div>
+                  {kortingPct > 0 && (
+                    <p className="mt-1 text-right text-sm font-semibold text-kliko-yellow">
+                      {t("signup.korting").replace("{pct}", String(kortingPct))}
+                    </p>
+                  )}
                 </div>
               </section>
 
