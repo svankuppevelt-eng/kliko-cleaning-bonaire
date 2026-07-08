@@ -68,6 +68,10 @@ export function OfficeShell({ children }: { children: ReactNode }) {
 
   const groups: NavGroup[] = [
     {
+      label: t("navgroep.opstarten"),
+      items: [{ href: "/beheer/checklists", label: t("shell.checklists") }],
+    },
+    {
       label: t("navgroep.operatie"),
       items: [
         { href: "/beheer/overzicht", label: t("shell.overzicht") },
@@ -93,7 +97,6 @@ export function OfficeShell({ children }: { children: ReactNode }) {
         { href: "/beheer/buurten", label: t("shell.buurten") },
         { href: "/beheer/website", label: t("shell.website") },
         { href: "/beheer/mails", label: t("shell.mails") },
-        { href: "/beheer/checklists", label: t("shell.checklists") },
         { href: "/beheer/instellingen", label: t("shell.instellingen") },
         ...(user.rol === "eigenaar"
           ? [{ href: "/beheer/team", label: t("shell.team") }]
@@ -150,7 +153,7 @@ export function OfficeShell({ children }: { children: ReactNode }) {
       {/* print:hidden: bij printen (bv. kliko-labels) alleen de pagina-inhoud. */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-kliko-navy/10 bg-white print:hidden lg:flex">
         <div className="px-5 py-5">
-          <Link href="/beheer/overzicht">
+          <Link href="/beheer/checklists">
             <LogoPrimary height={38} priority />
           </Link>
         </div>
@@ -188,7 +191,7 @@ export function OfficeShell({ children }: { children: ReactNode }) {
               <line x1="4" y1="17" x2="20" y2="17" />
             </svg>
           </button>
-          <Link href="/beheer/overzicht">
+          <Link href="/beheer/checklists">
             <LogoPrimary height={34} />
           </Link>
           <LanguageSwitcher />

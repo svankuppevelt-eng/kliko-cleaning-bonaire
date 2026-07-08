@@ -90,7 +90,7 @@ export default function LoginPage() {
         // users-doc niet leesbaar: val terug op allowlist hieronder
       }
       if (!rol) rol = rolVoorEmail(email);
-      router.replace(rol === "schoonmaker" ? "/vandaag" : "/beheer/overzicht");
+      router.replace(rol === "schoonmaker" ? "/vandaag" : "/beheer/checklists");
     } catch (err) {
       setError(loginErrorTekst(err));
       // Firebase geeft bij onbekend account meestal invalid-credential terug
@@ -143,7 +143,7 @@ export default function LoginPage() {
         actief: true,
         aangemaaktOp: new Date().toISOString(),
       });
-      router.replace("/beheer/overzicht");
+      router.replace("/beheer/checklists");
     } catch (err) {
       const code = err instanceof FirebaseError ? err.code : "";
       if (code === "auth/email-already-in-use") {
@@ -205,7 +205,7 @@ export default function LoginPage() {
                 {t("login.already")} ({officeUser.email})
               </p>
               <Link
-                href="/beheer/overzicht"
+                href="/beheer/checklists"
                 className="rounded-full bg-kliko-blue px-5 py-3 text-center font-bold text-white transition-transform hover:scale-[1.02]"
               >
                 {t("login.to.beheer")}
